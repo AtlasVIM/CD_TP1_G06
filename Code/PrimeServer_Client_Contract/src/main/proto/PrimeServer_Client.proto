@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "primeservice_client";
+
+package primeservice_client; // package do proto
+
+service PrimeServer_Client{
+
+   rpc isPrime(Number) returns (Result);
+}
+message Number{
+  int64 number = 1;
+}
+message Result{
+  bool isPrime = 1;
+}

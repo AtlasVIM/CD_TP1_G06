@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ringmanager_primeserver";
+
+package ringmanager_primeserver; // package do proto
+
+service RingManager_PrimeServer{
+
+  rpc registServer (Address) returns ( Result );
+  rpc nextRingServer (Address) returns (Address);
+}
+
+message Address{
+  string ip = 1;
+  int32 port = 2;
+}
+
+message Result{
+  string resultMessage = 1;
+}

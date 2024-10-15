@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ringmanagerclient";
+
+package ringmanagerclient; // package do proto
+
+service RingManagerClient{
+
+  rpc getPrimeServer(VoidMessage) returns (Address);
+}
+
+message Address{
+  string ip = 1;
+  int32 port = 2;
+}
+
+message VoidMessage{
+}
