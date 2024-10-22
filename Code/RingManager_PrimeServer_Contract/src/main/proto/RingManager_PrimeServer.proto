@@ -7,8 +7,12 @@ package ringmanager_primeserver; // package do proto
 
 service RingManager_PrimeServer{
 
-  rpc registServer (Address) returns ( Result );
-  rpc nextRingServer (Address) returns (Address);
+  /*
+    * Retorna o proximo PrimeServer
+    * Quanto tem somente 1 primeServer o proximo será o ip dele mesmo
+    * O proximo do ultimo primeServer é sempre o primeiro
+   */
+  rpc registServer (Address) returns (stream Address);
 }
 
 message Address{
@@ -16,6 +20,4 @@ message Address{
   int32 port = 2;
 }
 
-message Result{
-  string resultMessage = 1;
-}
+
