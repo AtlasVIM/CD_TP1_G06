@@ -6,8 +6,14 @@ option java_package = "primeserver_to_primeserver";
 package primeserver_to_primeserver; // package do proto
 
 service PrimeServer{
-
-  rpc ringMessage(RingRequest) returns (RingResponse);
+  /*
+    * Canal deve ficar aberto entre o primeServer e o seu proximo, para receber msg a qualquer hora
+    * Pedido de msg deve percorrer o anel até chegar no primeServer de Origem
+    * Cada primeServer deve verificar se o numero esta no seu redis local
+    * Caso sim, atualiza a mensagem com a informação isPrime true ou false
+    * Caso não, mas se a mensagem já tiver a informação isPrime, atualiza o redis local
+  */
+  rpc ringMessage(stream RingRequest) returns (RingResponse);
 }
 
 message RingRequest{
