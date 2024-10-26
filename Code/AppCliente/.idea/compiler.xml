@@ -7,11 +7,11 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ClientApp" />
+        <module name="RingClientApp" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="CalcClientApp" target="11" />
-      <module name="RingClientApp" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

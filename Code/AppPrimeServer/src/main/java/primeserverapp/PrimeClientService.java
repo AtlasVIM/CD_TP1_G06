@@ -11,12 +11,12 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
 
     @Override
     public StreamObserver<RingRequest> ringMessage(StreamObserver<VoidResponse> responseObserver) {
-        System.out.println("ringMessage called! returned a stream to receive requests");
+        System.out.println("PrimeServer Id: "+PrimeServer.uuid +", RingMessage called! returned a stream to receive requests");
 
         return new StreamObserver<RingRequest>() {
             @Override
             public void onNext(RingRequest ringRequest) {
-                System.out.println("client call next "+ringRequest.getPrimeServerId());
+                System.out.println("PrimeServer Id: "+PrimeServer.uuid +" receive call next from "+ringRequest.getPrimeServerId());
             }
 
             @Override
