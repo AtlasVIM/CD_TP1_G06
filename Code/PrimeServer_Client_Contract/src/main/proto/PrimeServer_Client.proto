@@ -1,12 +1,12 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "primeservice_client";
+option java_package = "primeclientstubs";
 
-package primeservice_client; // package do proto
+package primeclientservice; // package do proto
 
 /* Testar a requisição demorar mais de 30 seg*/
-service PrimeServer_Client{
+service PrimeClientService{
 
    rpc isPrime(Number) returns (PrimalityResult);
 }
