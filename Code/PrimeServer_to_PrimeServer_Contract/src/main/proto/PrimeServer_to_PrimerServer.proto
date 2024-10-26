@@ -13,15 +13,15 @@ service PrimeServer{
     * Caso sim, atualiza a mensagem com a informação isPrime true ou false
     * Caso não, mas se a mensagem já tiver a informação isPrime, atualiza o redis local
   */
-  rpc ringMessage(stream RingRequest) returns (RingResponse);
+  rpc ringMessage(stream RingRequest) returns (VoidResponse);
 }
 
 message RingRequest{
-  string id = 1;
+  string primeServerId = 1;
   int64 number = 2;
   bool isPrime = 3;
   bool wasPrimeCalculated = 4;
 }
 
-message RingResponse{
+message VoidResponse{
 }

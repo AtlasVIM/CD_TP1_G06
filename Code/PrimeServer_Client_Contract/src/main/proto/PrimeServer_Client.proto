@@ -8,11 +8,11 @@ package primeservice_client; // package do proto
 /* Testar a requisição demorar mais de 30 seg*/
 service PrimeServer_Client{
 
-   rpc isPrime(Number) returns (Result);
+   rpc isPrime(Number) returns (PrimalityResult);
 }
 message Number{
   int64 number = 1;
 }
-message Result{
+message PrimalityResult{
   bool isPrime = 1;
 }
