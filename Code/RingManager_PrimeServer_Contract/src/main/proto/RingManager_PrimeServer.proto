@@ -12,12 +12,20 @@ service RingManager_PrimeServer{
     * Quanto tem somente 1 primeServer o proximo será o ip dele mesmo
     * O proximo do ultimo primeServer é sempre o primeiro
    */
-  rpc registServer (Address) returns (stream Address);
+  rpc registServer (Address) returns (stream AddressResponse);
 }
 
 message Address{
   string ip = 1;
   int32 port = 2;
 }
+
+message AddressResponse{
+  string id = 1;
+  string ip = 2;
+  int32 port = 3;
+}
+
+
 
 

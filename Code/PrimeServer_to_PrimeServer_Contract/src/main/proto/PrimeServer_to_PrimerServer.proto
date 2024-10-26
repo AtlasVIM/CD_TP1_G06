@@ -17,10 +17,10 @@ service PrimeServer{
 }
 
 message RingRequest{
-  string ip = 1;
-  int32 port = 2;
-  int64 number = 3;
-  bool isPrime = 4;
+  string id = 1;
+  int64 number = 2;
+  bool isPrime = 3;
+  bool wasPrimeCalculated = 4;
 }
 
 message RingResponse{
