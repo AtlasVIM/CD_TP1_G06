@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class Client {
     private static String clientIP = "localhost";
-    private static int clientPort = 8500;
+    private static int clientPort = 8088;
 
 
     private static ManagedChannel channel;
