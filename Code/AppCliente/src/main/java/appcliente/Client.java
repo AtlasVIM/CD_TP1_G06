@@ -10,7 +10,7 @@ import java.util.Scanner;
 
 public class Client {
     private static String clientIP = "localhost";
-    private static int clientPort = 8500;
+    private static int clientPort = 8088;
 
 
     private static ManagedChannel channel;
@@ -58,7 +58,7 @@ public class Client {
 
         try {
             PrimalityResult res = primeServerBlockStub.isPrime(req);
-            System.out.println("The number " + num + " is " + (res.getIsPrime() ? "prime!" : "not prime!"));
+            System.out.println("The number '" + num + "' is " + (res.getIsPrime() ? "prime!" : "not prime!"));
         } catch (Exception e) {
             System.err.println("AN ERROR HAS OCCURRED WHILE CHECKING PRIMALITY: " +e.getMessage());
         }
