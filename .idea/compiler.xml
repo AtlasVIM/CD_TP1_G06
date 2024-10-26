@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/Code/PrimeServer_Client_Contract/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/Code/RingManager_Client_Contract/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/Code/RingManager_PrimeServer_Contract/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/Code/PrimeServer_to_PrimeServer_Contract/src/main/resources/archetype-resources" includeSubdirectories="true" />
+    </excludeFromCompile>
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="PrimeServer_to_PrimeServer_Contract" />
+        <module name="PrimeServer_Client_Contract" />
+        <module name="RingManager_Client_Contract" />
+        <module name="RingManager_PrimeServer_Contract" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

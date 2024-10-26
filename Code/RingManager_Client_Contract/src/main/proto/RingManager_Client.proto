@@ -7,13 +7,13 @@ package ringmanagerclient; // package do proto
 
 service RingManagerClient{
 
-  rpc getPrimeServer(VoidMessage) returns (Address);
+  rpc getPrimeServer(VoidRequest) returns (PrimeServerAddress);
 }
 
-message Address{
+message PrimeServerAddress{
   string ip = 1;
   int32 port = 2;
 }
 
-message VoidMessage{
+message VoidRequest{
 }
