@@ -14,5 +14,8 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
     @Override
     public void isPrime(Number request, StreamObserver<PrimalityResult> responseObserver){
         System.out.println("isPrime called!");
+
+        responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(false).build());
+        responseObserver.onCompleted();
     }
 }

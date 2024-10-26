@@ -22,6 +22,8 @@ public class PrimeServer {
             io.grpc.Server svc = ServerBuilder
                     .forPort(myPort)
                     .addService(new ClientService(myPort))
+                    .addService(new PrimeClientService(myPort))
+                    .addService(new RingManagerService(myPort))
                     .build();
             svc.start();
             System.out.println(String.format("PrimeServer started. Listening on Port: %s ", myPort));
