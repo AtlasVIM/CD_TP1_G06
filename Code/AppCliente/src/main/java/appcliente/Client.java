@@ -58,7 +58,7 @@ public class Client {
 
         try {
             PrimalityResult res = primeServerBlockStub.isPrime(req);
-            System.out.println("The number " + num + " is " + (res.getIsPrime() ? "prime!" : "not prime!"));
+            System.out.println("The number '" + num + "' is " + (res.getIsPrime() ? "prime!" : "not prime!"));
         } catch (Exception e) {
             System.err.println("AN ERROR HAS OCCURRED WHILE CHECKING PRIMALITY: " +e.getMessage());
         }
