@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "primeserver_to_primeserver";
+option java_package = "primeserverstubs";
 
-package primeserver_to_primeserver; // package do proto
+package primecontractservice; // package do proto
 
-service PrimeServer{
+service PrimeContractService{
   /*
     * Canal deve ficar aberto entre o primeServer e o seu proximo, para receber msg a qualquer hora
     * Pedido de msg deve percorrer o anel até chegar no primeServer de Origem

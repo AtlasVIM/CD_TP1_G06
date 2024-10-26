@@ -1,11 +1,11 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "ringmanager_primeserver";
+option java_package = "ringmanagerprimestubs";
 
-package ringmanager_primeserver; // package do proto
+package ringmanagerprimeservice; // package do proto
 
-service RingManager_PrimeServer{
+service RingManagerPrimeService{
 
   /*
     * Retorna o proximo PrimeServer
