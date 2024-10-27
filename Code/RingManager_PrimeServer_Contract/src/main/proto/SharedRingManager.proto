@@ -1,0 +1,9 @@
+// shared.proto
+syntax = "proto3";
+
+package sharedringmanager;
+
+message PrimeServerAddress {
+  string ip = 1;
+  int32 port = 2;
+}
