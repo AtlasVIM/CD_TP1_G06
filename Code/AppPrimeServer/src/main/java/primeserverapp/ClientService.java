@@ -15,7 +15,18 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
     public void isPrime(Number request, StreamObserver<PrimalityResult> responseObserver){
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +", method isPrime called! Number "+request.getNumber());
 
-        responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(false).build());
-        responseObserver.onCompleted();
+        var nrIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
+        if (nrIsPrime.isBlank()){
+            PrimeClientService.sendMessageNextPrimeServerAsync(PrimeServer.uuid,
+                    request.getNumber(),
+                    false,
+                    false);
+            //todo enviar esse numero calculado de volta pro client
+            //possivel solução: colocar um while consultando o dicionario redis, a cada 30seg.
+        }
+        else {
+            responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(Boolean.getBoolean(nrIsPrime)).build());
+            responseObserver.onCompleted();
+        }
     }
 }

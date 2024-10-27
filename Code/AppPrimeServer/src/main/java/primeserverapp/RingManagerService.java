@@ -7,6 +7,7 @@ import ringmanagerprimestubs.PrimeServerAddress;
 import ringmanagerprimestubs.RingManagerPrimeServiceGrpc;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerPrimeServiceImplBase {
 
@@ -38,7 +39,12 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
             Iterator<NextPrimeServerAddress> response = blockingStub.registServer(request);
             while (response.hasNext()) {
                 ServerAddress nextPrimeAddress = new ServerAddress(response.next().getNextIp(), response.next().getNextPort());
-                PrimeServer.nextPrimeAddress = nextPrimeAddress;
+                if (!Objects.equals(PrimeServer.nextPrimeAddress, nextPrimeAddress)){
+                    PrimeClientService.completeChannelWithNextPrimeServer();
+                    PrimeServer.nextPrimeAddress = nextPrimeAddress;
+                    PrimeClientService.openChannelNextPrimeServer();
+                }
+
                 System.out.println("MyId is: "+PrimeServer.uuid+" NextPrimeServer is: " +nextPrimeAddress.ip +":"+nextPrimeAddress.port );
             }
         }

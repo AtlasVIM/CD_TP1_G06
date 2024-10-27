@@ -3,12 +3,13 @@ package primeserverapp;
 import io.grpc.ManagedChannel;
 import io.grpc.ServerBuilder;
 import primeclientstubs.PrimeClientServiceGrpc;
+import redis.clients.jedis.Jedis;
 
 import java.util.UUID;
 
 public class PrimeServer {
 
-    public static UUID uuid = UUID.randomUUID();
+    public static String uuid = UUID.randomUUID().toString();
     public static ServerAddress nextPrimeAddress = new ServerAddress("localhost", 8502);
     public static ServerAddress redisAddress = new ServerAddress("localhost", 8503);
     private static ServerAddress myAddress = new ServerAddress("localhost", 8500);
@@ -38,6 +39,19 @@ public class PrimeServer {
 
         } catch (Exception ex){
             ex.printStackTrace();
+        }
+    }
+
+    static String getIsPrimeFromRedis(String key){
+        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connecting on Redis "+PrimeServer.redisAddress.ip+
+                ":"+PrimeServer.redisAddress.port+ " to get number "+key);
+
+        try (Jedis jedis = new Jedis(PrimeServer.redisAddress.ip, PrimeServer.redisAddress.port)){
+            return jedis.get(key);
+        }
+        catch (Exception ex){
+            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" error connecting on Redis "+ex.getMessage());
+            return "";
         }
     }
 

@@ -1,13 +1,13 @@
 package primeserverapp;
 
 import io.grpc.stub.StreamObserver;
-import primeserverstubs.RingRequest;
+import primeserverstubs.VoidResponse;
 
-public class RingMessageStream implements StreamObserver<RingRequest> {
+public class RingMessageStream implements StreamObserver<VoidResponse> {
     boolean completed=false;
 
     @Override
-    public void onNext(RingRequest ringRequest) {
+    public void onNext(VoidResponse voidResponse) {
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +" RingMessageStream next called.");
     }
 
