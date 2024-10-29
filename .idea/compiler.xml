@@ -12,10 +12,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="PrimeServer_to_PrimeServer_Contract" />
+        <module name="RingManagerPrimeContract" />
+        <module name="PrimeServerClientContract" />
+        <module name="PrimeServerContract" />
         <module name="PrimeServer_Client_Contract" />
+        <module name="RingManagerClientContract" />
         <module name="RingManager_Client_Contract" />
         <module name="RingManager_PrimeServer_Contract" />
+        <module name="PrimeServer_to_PrimeServer_Contract" />
       </profile>
     </annotationProcessing>
   </component>
