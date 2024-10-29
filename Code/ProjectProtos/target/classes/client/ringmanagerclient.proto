@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "shared/shared.proto";
+
+option java_multiple_files = true;
+option java_package = "ringmanagerclientstubs";
+
+package ringmanagerclientservice;
+
+service RingManagerClientService {
+  rpc getPrimeServer(VoidRequest) returns (shared.PrimeServerAddress);
+}
+
+message VoidRequest {
+}

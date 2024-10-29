@@ -1,0 +1,16 @@
+syntax = "proto3";
+import "shared/shared.proto";
+
+option java_multiple_files = true;
+option java_package = "ringmanagerprimestubs";
+
+package ringmanagerprimeservice;
+
+service RingManagerPrimeService {
+  rpc registServer(shared.PrimeServerAddress) returns (stream NextPrimeServerAddress);
+}
+
+message NextPrimeServerAddress {
+  string next_ip = 1;
+  int32 next_port = 2;
+}
