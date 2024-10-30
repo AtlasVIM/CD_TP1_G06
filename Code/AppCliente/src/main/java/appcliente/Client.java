@@ -13,22 +13,46 @@ public class Client {
     private static int clientPort = 8088;
 
 
-    private static ManagedChannel channel;
+    private static ManagedChannel channelPrimeServer;
+    private static ManagedChannel channelRingManager;
     private static RingManagerClientServiceGrpc.RingManagerClientServiceBlockingStub ringBlockStub;
     private static PrimeClientServiceGrpc.PrimeClientServiceBlockingStub primeServerBlockStub;
+
 
     public static void main(String[] args) {
         try {
             if (args.length == 2) {
                 clientIP = args[0];
                 clientPort = Integer.parseInt(args[1]);
+                ServerAddress ringManagerAddress = new ServerAddress(clientIP, clientPort);
             }
-            System.out.println("Connecting to "+clientIP+":"+ clientPort);
-            channel = ManagedChannelBuilder.forAddress(clientIP, clientPort)
+            System.out.println("Connecting to Ring Manager in "+clientIP+":"+ clientPort);
+
+            channelRingManager = ManagedChannelBuilder
+                    .forAddress(clientIP, clientPort)
                     .usePlaintext()
                     .build();
 
-            ringBlockStub = RingManagerClientServiceGrpc.newBlockingStub(channel);
+
+
+            ringBlockStub = RingManagerClientServiceGrpc.newBlockingStub(channelRingManager);
+
+            PrimeServerAddress address = ringBlockStub.getPrimeServer(VoidRequest.newBuilder()
+                    .build());
+            System.out.println("Server available in " + address.getIp() + " in port " + address.getPort());
+
+            System.out.println("Connecting to Prime Server...");
+
+
+            channelPrimeServer = ManagedChannelBuilder
+                    .forAddress(address.getIp(), address.getPort())
+                    .usePlaintext()
+                    .build();
+
+            System.out.println("Connected!");
+
+            primeServerBlockStub = PrimeClientServiceGrpc.newBlockingStub(channelPrimeServer);
+
 
             while (true) {
                 switch (Menu()) {
@@ -36,11 +60,7 @@ public class Client {
                         System.exit(0);
                     case 1:
                         checkPrimality();
-                    case 2:
-                        PrimeServerAddress address = ringBlockStub.getPrimeServer(VoidRequest.newBuilder()
-                                .build());
 
-                        System.out.println("Server available in " + address.getIp() + " in port " + address.getPort());
                 }
 
             }
@@ -72,7 +92,6 @@ public class Client {
             System.out.println("  ---  MENU  ---  ");
             System.out.println("0 - EXIT SERVER");
             System.out.println("1 - PRIME NUMBER CLASSIFIER");
-            System.out.println("2 - REQUEST SERVER");
             num = scan.nextInt();
         } while (!(num == 0));
         return num;
