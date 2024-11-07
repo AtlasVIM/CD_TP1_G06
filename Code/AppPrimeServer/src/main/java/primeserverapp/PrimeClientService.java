@@ -17,7 +17,7 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     public PrimeClientService(int svcPort){
         System.out.println("PrimeClientService is available on port:" + svcPort);
 
-        openChannelNextPrimeServer();
+        //openChannelNextPrimeServer();
 
     }
 

@@ -25,15 +25,15 @@ public class PrimeServerService extends RingManagerPrimeServiceGrpc.RingManagerP
     public void registServer(PrimeServerAddress request, StreamObserver<NextPrimeServerAddress> responseObserver) {
         // Adiciona o novo servidor à lista compartilhada
         sharedServerList.addServer(new MyServer(request.getIp(), request.getPort()));
-        observers.add(responseObserver);
+        //observers.add(responseObserver);
 
         // Cria um canal para o novo servidor
-        ManagedChannel channel = ManagedChannelBuilder
+        /* ManagedChannel channel = ManagedChannelBuilder
                 .forAddress(request.getIp(), request.getPort())
                 .usePlaintext() // Use plaintext for simplicity
                 .build();
         channels.add(channel);
-
+        */
         System.out.println("Server registered: " + request.getIp() + ":" + request.getPort());
 
         // Envia a atualização do próximo servidor para todos os servidores
@@ -45,6 +45,7 @@ public class PrimeServerService extends RingManagerPrimeServiceGrpc.RingManagerP
                 .build();
 
         responseObserver.onNext(update);
+        System.out.println("RESPONSE OBSERVER RING MANAGER PRIME SERVER SERVICE ON NEXT");
         //System.out.println("Teste "+responseObserver.onNext());
         //TODO
 

@@ -12,6 +12,7 @@ import java.util.Objects;
 public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerPrimeServiceImplBase {
 
     private static RingManagerPrimeServiceGrpc.RingManagerPrimeServiceBlockingStub blockingStub;
+    private static RingManagerPrimeServiceGrpc.RingManagerPrimeServiceStub noBlockStub;
     private static ManagedChannel channel;
 
     public RingManagerService(ServerAddress myAddress, ServerAddress managerAddress) {
@@ -29,6 +30,7 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
     static void registPrimeServer(ServerAddress myAddress){
         try {
             blockingStub = RingManagerPrimeServiceGrpc.newBlockingStub(channel);
+            noBlockStub = RingManagerPrimeServiceGrpc.newStub(channel);
 
             PrimeServerAddress request = PrimeServerAddress
                     .newBuilder()
@@ -37,8 +39,15 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
                     .build();
 
             Iterator<NextPrimeServerAddress> response = blockingStub.registServer(request);
+
+            //adicionar classe que implementa StreamObserver<NextPrimeServerAddress>
+            //utilizar noblockstub em vez de blocking stub e passar esse streamobserver
+
+
             while (response.hasNext()) {
+                System.out.println(response);
                 ServerAddress nextPrimeAddress = new ServerAddress(response.next().getNextIp(), response.next().getNextPort());
+                System.out.println(nextPrimeAddress + " " + nextPrimeAddress.ip + " " + nextPrimeAddress.port);
                 if (!Objects.equals(PrimeServer.nextPrimeAddress, nextPrimeAddress)){
                     PrimeClientService.completeChannelWithNextPrimeServer();
                     PrimeServer.nextPrimeAddress = nextPrimeAddress;
