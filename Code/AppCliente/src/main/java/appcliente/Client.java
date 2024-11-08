@@ -64,7 +64,6 @@ public class Client {
                         System.exit(0);
                         break;
                     case 1:
-                        System.out.println("hello");
                         checkPrimality();
                         break;
                     default:
