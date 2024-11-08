@@ -52,17 +52,19 @@ public class Client {
             System.out.println("Connected!");
 
             primeServerBlockStub = PrimeClientServiceGrpc.newBlockingStub(channelPrimeServer);
-
+        //Teste de conexao com ring manager e prime server foi bem sucedido
+            // Tem apenas um erro, caso algum cliente se desconecte, o numero de clientes dentro do prime server nao diminui.
+            // Isto significa que quando um novo cliente se conecta pode nao estar a ser conectar com o server com menos pessoas.
 
             while (true) {
                 switch (Menu()) {
                     case 0:
                         System.exit(0);
+                        break;
                     case 1:
                         checkPrimality();
-
+                        break;
                 }
-
             }
         } catch (Exception ex) {
             ex.printStackTrace();
