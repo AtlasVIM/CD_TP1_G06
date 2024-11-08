@@ -38,13 +38,13 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
                     .setPort(myAddress.port)
                     .build();
 
-            Iterator<NextPrimeServerAddress> response = blockingStub.registServer(request);
-
+            RegistPrimeServerStream response = new RegistPrimeServerStream();
+            noBlockStub.registServer(request, response);
             //adicionar classe que implementa StreamObserver<NextPrimeServerAddress>
             //utilizar noblockstub em vez de blocking stub e passar esse streamobserver
 
 
-            while (response.hasNext()) {
+            /*while (response.hasNext()) {
                 System.out.println(response);
                 ServerAddress nextPrimeAddress = new ServerAddress(response.next().getNextIp(), response.next().getNextPort());
                 System.out.println(nextPrimeAddress + " " + nextPrimeAddress.ip + " " + nextPrimeAddress.port);
@@ -55,7 +55,7 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
                 }
 
                 System.out.println("MyId is: "+PrimeServer.uuid+" NextPrimeServer is: " +nextPrimeAddress.ip +":"+nextPrimeAddress.port );
-            }
+            }*/
         }
         catch (Exception ex){
             System.out.println("MyId is: "+PrimeServer.uuid+" Synchronous call error: "+ex.getMessage());
