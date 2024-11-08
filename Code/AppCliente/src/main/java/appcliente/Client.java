@@ -57,13 +57,18 @@ public class Client {
             // Isto significa que quando um novo cliente se conecta pode nao estar a ser conectar com o server com menos pessoas.
 
             while (true) {
-                switch (Menu()) {
+                int choice = Menu();
+                System.out.println("Menu choice: " + choice);
+                switch (choice) {
                     case 0:
                         System.exit(0);
                         break;
                     case 1:
+                        System.out.println("hello");
                         checkPrimality();
                         break;
+                    default:
+                        throw new IllegalStateException("Unexpected value: " + choice);
                 }
             }
         } catch (Exception ex) {
@@ -95,7 +100,7 @@ public class Client {
             System.out.println("0 - EXIT SERVER");
             System.out.println("1 - PRIME NUMBER CLASSIFIER");
             num = scan.nextInt();
-        } while (!(num == 0));
+        } while (!(num >= 0 && num < 2));
         return num;
     }
 
