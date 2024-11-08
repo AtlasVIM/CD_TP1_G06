@@ -17,7 +17,7 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     public PrimeClientService(int svcPort){
         System.out.println("PrimeClientService is available on port:" + svcPort);
 
-        //openChannelNextPrimeServer();
+        openChannelNextPrimeServer();
 
     }
 
@@ -107,8 +107,8 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     }
 
     static void openChannelNextPrimeServer(){
-        if (channelPrimeClient.isTerminated())
-            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel is closed()");
+        //if (channelPrimeClient.isTerminated())
+          //  System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel is closed()");
 
         channelPrimeClient = ManagedChannelBuilder.forAddress(PrimeServer.nextPrimeAddress.ip, PrimeServer.nextPrimeAddress.port)
                 .usePlaintext()
@@ -116,12 +116,16 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
 
         noBlockStubPrimeClient = PrimeContractServiceGrpc.newStub(channelPrimeClient);
         streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
+
+        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel is connected");
     }
 
     static void completeChannelWithNextPrimeServer(){
         if (!channelPrimeClient.isTerminated()) {
             streamRingRequestClient.onCompleted();
             channelPrimeClient.shutdown();
+
+            System.out.println("Close channel old PrimeServer.");
         }
     }
 }
