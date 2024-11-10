@@ -7,16 +7,15 @@ import primeclientstubs.PrimeClientServiceGrpc;
 
 public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImplBase {
 
-    public ClientService(int svcPort){
-        System.out.println("ClientService is available on port:" + svcPort);
-    }
 
     @Override
     public void isPrime(Number request, StreamObserver<PrimalityResult> responseObserver){
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +", method isPrime called! Number "+request.getNumber());
 
         var nrIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
-        if (nrIsPrime.isBlank()){
+        System.out.println("ClientService isPrime: var nrIsPrime "+ nrIsPrime);
+        if (nrIsPrime == null) {
+            //If not found answer in redis local, send to nextPrime
             PrimeClientService.sendMessageNextPrimeServerAsync(PrimeServer.uuid,
                     request.getNumber(),
                     false,

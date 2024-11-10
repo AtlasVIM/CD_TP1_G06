@@ -9,8 +9,8 @@ import primeclientstubs.*;
 import java.util.Scanner;
 
 public class Client {
-    private static String clientIP = "localhost";
-    private static int clientPort = 8088;
+    private static String managerIP = "localhost";
+    private static int managerPort = 8088;
 
 
     private static ManagedChannel channelPrimeServer;
@@ -22,27 +22,23 @@ public class Client {
     public static void main(String[] args) {
         try {
             if (args.length == 2) {
-                clientIP = args[0];
-                clientPort = Integer.parseInt(args[1]);
-                ServerAddress ringManagerAddress = new ServerAddress(clientIP, clientPort);
+                managerIP = args[0];
+                managerPort = Integer.parseInt(args[1]);
             }
-            System.out.println("Connecting to Ring Manager in "+clientIP+":"+ clientPort);
 
             channelRingManager = ManagedChannelBuilder
-                    .forAddress(clientIP, clientPort)
+                    .forAddress(managerIP, managerPort)
                     .usePlaintext()
                     .build();
 
-
-
             ringBlockStub = RingManagerClientServiceGrpc.newBlockingStub(channelRingManager);
+            System.out.println("RingManager "+managerIP+":"+ managerPort +" connected");
 
-            PrimeServerAddress address = ringBlockStub.getPrimeServer(VoidRequest.newBuilder()
-                    .build());
-            System.out.println("Server available in " + address.getIp() + " in port " + address.getPort());
+            PrimeServerAddress address = ringBlockStub.getPrimeServer(VoidRequest.newBuilder().build());
+
+            System.out.println("MyPrimeServer is " + address.getIp() + ":" + address.getPort());
 
             System.out.println("Connecting to Prime Server...");
-
 
             channelPrimeServer = ManagedChannelBuilder
                     .forAddress(address.getIp(), address.getPort())
@@ -52,7 +48,7 @@ public class Client {
             System.out.println("Connected!");
 
             primeServerBlockStub = PrimeClientServiceGrpc.newBlockingStub(channelPrimeServer);
-        //Teste de conexao com ring manager e prime server foi bem sucedido
+            //Teste de conexao com ring manager e prime server foi bem sucedido
             // Tem apenas um erro, caso algum cliente se desconecte, o numero de clientes dentro do prime server nao diminui.
             // Isto significa que quando um novo cliente se conecta pode nao estar a ser conectar com o server com menos pessoas.
 

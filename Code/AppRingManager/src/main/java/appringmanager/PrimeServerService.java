@@ -29,7 +29,7 @@ public class PrimeServerService extends RingManagerPrimeServiceGrpc.RingManagerP
 
         clients.add(responseObserver);
 
-        System.out.println("Server registered: " + request.getIp() + ":" + request.getPort());
+        System.out.println("PrimeServer registered: " + request.getIp() + ":" + request.getPort());
 
         // Envia a atualização do próximo servidor para todos os servidores
 
@@ -40,6 +40,7 @@ public class PrimeServerService extends RingManagerPrimeServiceGrpc.RingManagerP
         sendNextServerUpdate();
     }
 
+    //Required: PrimeServer must be alive
     private void sendNextServerUpdate() {
         // Envia a atualização de próximo servidor para todos os servidores na lista
         for (int i = 0; i < clients.size(); i++) {
@@ -50,8 +51,15 @@ public class PrimeServerService extends RingManagerPrimeServiceGrpc.RingManagerP
                     .setNextPort(nextServer.getPort())
                     .build();
 
-            clients.get(i).onNext(update);
+            try {
+                clients.get(i).onNext(update);
+            } catch (Exception ex) {
+                System.out.println("PrimeServer " + nextServer.getIp() + ":" + nextServer.getPort() +" is unavailable");
+                clients.get(i).onError(ex);
+            }
         }
+
+        System.out.println("Message was sent to all PrimeServer on list. We have "+clients.size()+" primeServers registered");
     }
 
     // Método opcional para encerrar todos os canais ao fechar o serviço

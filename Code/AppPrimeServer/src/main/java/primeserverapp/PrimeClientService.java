@@ -14,17 +14,11 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     private static ManagedChannel channelPrimeClient;
     private static StreamObserver<RingRequest> streamRingRequestClient;
 
-    public PrimeClientService(int svcPort){
-        System.out.println("PrimeClientService is available on port:" + svcPort);
-
-        openChannelNextPrimeServer();
-
-    }
 
     @Override
     public StreamObserver<RingRequest> ringMessage(StreamObserver<VoidResponse> responseObserver) {
         //here primeServer is server
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +", RingMessage called! returned a stream to receive requests");
+       // System.out.println("PrimeServer Id: "+PrimeServer.uuid +", RingMessage called! Returned a stream to receive requests");
 
         return new StreamObserver<RingRequest>() {
             @Override
@@ -33,11 +27,12 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
 
                 var key = Long.toString(ringRequest.getNumber());
                 var nrIsPrime = PrimeServer.getIsPrimeFromRedis(key);
+                System.out.println("PrimeClientService getIsPrimeFromRedis. var nrIsPrime "+ nrIsPrime);
 
                 //Means message runs all ring and no Prime had the answer isPrime
                 if (ringRequest.getPrimeServerId().equals(PrimeServer.uuid)){
                     if (ringRequest.getWasPrimeCalculated()){
-                        if (nrIsPrime.isBlank()) {
+                        if (nrIsPrime == null) {
                             setIsPrimeToRedis(key, Boolean.toString(ringRequest.getIsPrime()));
                         }
                         //retornar para o client numero primo.
@@ -50,15 +45,15 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                     }
                 }
                 else {
-                    if (ringRequest.getWasPrimeCalculated() && nrIsPrime.isBlank()) {
+                    if (ringRequest.getWasPrimeCalculated() && nrIsPrime == null) {
                         setIsPrimeToRedis(key, Boolean.toString(ringRequest.getIsPrime()));
                         nrIsPrime = Boolean.toString(ringRequest.getIsPrime());
                     }
 
                     sendMessageNextPrimeServerAsync(ringRequest.getPrimeServerId(),
                                             ringRequest.getNumber(),
-                                            nrIsPrime.isBlank() ? false : Boolean.getBoolean(nrIsPrime),
-                                            !nrIsPrime.isBlank());
+                                            nrIsPrime == null ? false : Boolean.getBoolean(nrIsPrime),
+                                            !(nrIsPrime == null));
 
                 }
 
@@ -98,7 +93,11 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                     .setWasPrimeCalculated(isCalculated)
                     .build();
 
+            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer");
+            streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
+
             streamRingRequestClient.onNext(nextRingMessage);
+            System.out.println("RingMessage was sent");
         }
         catch (Exception ex)
         {
@@ -107,20 +106,20 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     }
 
     static void openChannelNextPrimeServer(){
-        //if (channelPrimeClient.isTerminated())
-          //  System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel is closed()");
 
         channelPrimeClient = ManagedChannelBuilder.forAddress(PrimeServer.nextPrimeAddress.ip, PrimeServer.nextPrimeAddress.port)
                 .usePlaintext()
                 .build();
 
         noBlockStubPrimeClient = PrimeContractServiceGrpc.newStub(channelPrimeClient);
-        streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
 
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel is connected");
+        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel with NexPrimeServer "+PrimeServer.nextPrimeAddress.ip+":"+PrimeServer.nextPrimeAddress.port+" is open");
     }
 
     static void completeChannelWithNextPrimeServer(){
+        if (channelPrimeClient == null)
+            return;
+
         if (!channelPrimeClient.isTerminated()) {
             streamRingRequestClient.onCompleted();
             channelPrimeClient.shutdown();

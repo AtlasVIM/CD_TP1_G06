@@ -17,14 +17,13 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
 
     public RingManagerService(ServerAddress myAddress, ServerAddress managerAddress) {
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connecting to RingManager at " + managerAddress.ip + ":" + managerAddress.port);
-
         channel = ManagedChannelBuilder
                 .forAddress(managerAddress.ip, managerAddress.port)
                 .usePlaintext()
                 .build();
 
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connected");
-        registPrimeServer(myAddress);
+        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connected to RingManager successfully");
+
     }
 
     static void registPrimeServer(ServerAddress myAddress){

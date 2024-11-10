@@ -13,6 +13,10 @@ public class SharedServerList {
         servers.add(server);
     }
 
+    public void removeServer(int index){
+        servers.remove(index);
+    }
+
     // Método para obter o próximo servidor de forma cíclica
     public MyServer getNextServer(int currentIndex) {
 
