@@ -1,6 +1,6 @@
 docker build -t primecalculator .
 docker run -d --name PrimeServerRedis --network minha-rede -p 6000:6379 redis
-docker run -d --network minha-rede primecalculator 15 localhost 8501
+docker run -d parugui/primecalculator 2 104.199.18.88 8001
 
 docker run --name redis-container --network minha-rede -p 8501:8501 redis:7.4.2 redis-server --port 8501
 

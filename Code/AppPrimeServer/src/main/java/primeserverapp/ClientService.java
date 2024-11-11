@@ -13,7 +13,6 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +", method isPrime called! Number "+request.getNumber());
 
         var nrIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
-        System.out.println("ClientService isPrime: var nrIsPrime "+ nrIsPrime);
         if (nrIsPrime == null) {
             //If not found answer in redis local, send to nextPrime
             PrimeClientService.sendMessageNextPrimeServerAsync(PrimeServer.uuid,
@@ -21,27 +20,45 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
                     false,
                     false);
 
-            //esperar uns segundos e verificar se o numero tem no redis local
+            //Wait and check if it has the answer on Redis local
             for (int i = 0; i <= 30; i++) {
                 try {
-                    var getIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
-                    if (getIsPrime == null) {
+                    nrIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
+                    if (nrIsPrime == null) {
                         Thread.sleep(1 * 1000);
                     }
                     else {
+                        System.out.println("We have answer! After sendMessageNextPrimeServerAsync. Number: "+request.getNumber() +" isPrime: "+nrIsPrime);
                         PrimeServer.removePrimeCalculatorContainer();
-                        responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(Boolean.getBoolean(nrIsPrime)).build());
-                        responseObserver.onCompleted();
+
+                        var response = PrimalityResult.newBuilder().setIsPrime(Boolean.parseBoolean(nrIsPrime)).build();
+                        System.out.println("Returning response: "+response.getIsPrime());
+                        responseObserver.onNext(response);
                         break;
                     }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    System.out.println("Error returning answer to client. Details: "+e.getMessage());
+                    e.printStackTrace();
                 }
             }
+
+            responseObserver.onCompleted();
+            System.out.println("Response was send. ");
         }
         else {
-            responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(Boolean.getBoolean(nrIsPrime)).build());
-            responseObserver.onCompleted();
+            System.out.println("We have answer in my local Redis! Number: "+request.getNumber() +" isPrime: "+nrIsPrime);
+            try {
+                var response = PrimalityResult.newBuilder().setIsPrime(Boolean.parseBoolean(nrIsPrime)).build();
+                System.out.println("Returning response: "+response.getIsPrime());
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                System.out.println("Response was send. ");
+            }
+            catch (Exception ex){
+                System.out.println("Error returning answer to client. Details: "+ex.getMessage());
+                ex.printStackTrace();
+            }
+
         }
     }
 }

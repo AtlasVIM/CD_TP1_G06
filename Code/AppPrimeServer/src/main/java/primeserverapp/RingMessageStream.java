@@ -8,18 +8,19 @@ public class RingMessageStream implements StreamObserver<VoidResponse> {
 
     @Override
     public void onNext(VoidResponse voidResponse) {
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" RingMessageStream next called.");
+        System.out.println("RingMessageStream onNext called.");
     }
 
     @Override
     public void onError(Throwable throwable) {
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" RingMessageStream completed with error:"+throwable.getMessage());
+        System.out.println("RingMessageStream onError. Details: "+throwable.getMessage());
+        throwable.printStackTrace();
         completed=true;
     }
 
     @Override
     public void onCompleted() {
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" RingMessageStream completed!");
+        System.out.println("RingMessageStream onCompleted called.");
         completed=true;
     }
 

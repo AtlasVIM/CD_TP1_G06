@@ -12,14 +12,13 @@ public class Main {
         long numero = Long.parseLong(args[0]);
         String redisIP = args[1];
         int redisPort = Integer.parseInt(args[2]);
-        boolean bIsPrime = false;
 
         boolean primeBool = isPrime(numero);
 
         try (Jedis jedis = new Jedis(redisIP, redisPort)){
             String pingResponse = jedis.ping();
             System.out.println("PrimeCalculator connected on redis "+redisIP+":"+redisPort +" resposta comando ping "+pingResponse);
-            jedis.set(numero+"", Boolean.toString(bIsPrime));
+            jedis.set(numero+"", Boolean.toString(primeBool));
         }
         catch (Exception ex){
             System.out.println("Error connecting on redis "+redisIP+":"+redisPort+". Details: "+ex.getMessage());

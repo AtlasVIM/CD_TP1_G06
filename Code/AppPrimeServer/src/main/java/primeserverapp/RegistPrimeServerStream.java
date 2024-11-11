@@ -23,14 +23,14 @@ public class RegistPrimeServerStream implements StreamObserver<NextPrimeServerAd
 
     @Override
     public void onError(Throwable throwable) {
-        System.out.println("RegistPrimeServer Completed with error: "+throwable.getMessage());
+        System.out.println("RegistPrimeServer onError. Completed with error: "+throwable.getMessage());
         throwable.printStackTrace();
         completed=true;
     }
 
     @Override
     public void onCompleted() {
-        System.out.println("RegistPrimeServer completed");
+        System.out.println("RegistPrimeServer onCompleted");
         completed=true;
     }
 

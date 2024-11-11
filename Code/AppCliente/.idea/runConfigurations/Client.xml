@@ -2,7 +2,7 @@
   <configuration default="false" name="Client" type="Application" factoryName="Application" singleton="false">
     <option name="MAIN_CLASS_NAME" value="appcliente.Client" />
     <module name="ClientApp" />
-    <option name="PROGRAM_PARAMETERS" value="146.148.125.34 9000" />
+    <option name="PROGRAM_PARAMETERS" value="35.205.45.57 9000" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="appcliente.*" />

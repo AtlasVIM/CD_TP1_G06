@@ -94,12 +94,10 @@ public class PrimeServer {
 
     //Check on Redis if number isPrime
     static String getIsPrimeFromRedis(String key){
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connecting on Redis "+PrimeServer.redisAddress.ip+
-                ":"+PrimeServer.redisAddress.port+ " to get number "+key);
 
         try (Jedis jedis = new Jedis(PrimeServer.redisAddress.ip, PrimeServer.redisAddress.port)){
-            System.out.println("connected on redis, get key");
             return jedis.get(key);
+
         }
         catch (Exception ex){
             System.out.println("PrimeServer Id: "+PrimeServer.uuid +" error connecting on Redis "+ex.getMessage());

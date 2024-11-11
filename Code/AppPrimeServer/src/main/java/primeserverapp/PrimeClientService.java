@@ -18,7 +18,6 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
     @Override
     public StreamObserver<RingRequest> ringMessage(StreamObserver<VoidResponse> responseObserver) {
         //here primeServer is server
-       // System.out.println("PrimeServer Id: "+PrimeServer.uuid +", RingMessage called! Returned a stream to receive requests");
 
         return new StreamObserver<RingRequest>() {
             @Override
@@ -27,19 +26,19 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
 
                 var key = Long.toString(ringRequest.getNumber());
                 var nrIsPrime = PrimeServer.getIsPrimeFromRedis(key);
-                System.out.println("PrimeClientService getIsPrimeFromRedis. var nrIsPrime "+ nrIsPrime);
 
                 //Means message runs all ring and no Prime had the answer isPrime
                 if (ringRequest.getPrimeServerId().equals(PrimeServer.uuid)){
                     if (ringRequest.getWasPrimeCalculated()){
                         if (nrIsPrime == null) {
                             setIsPrimeToRedis(key, Boolean.toString(ringRequest.getIsPrime()));
+                            System.out.println("PrimeClientService onNext. Received answer from another prime in the ring. Set my local Redis. Number: "+ key +" isPrime: "+ringRequest.getIsPrime());
                         }
                     }
                     else {
+                        System.out.println("PrimeClientService onNext. None PrimeServer has the answer. Starting PrimeCalculatorContainer");
                         //chamar container que calcula o numero primo
                         PrimeServer.startPrimeCalculatorContainer(key);
-
                     }
                 }
                 else {
@@ -52,32 +51,33 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                                             ringRequest.getNumber(),
                                             nrIsPrime == null ? false : Boolean.getBoolean(nrIsPrime),
                                             !(nrIsPrime == null));
-
                 }
 
             }
 
             @Override
             public void onError(Throwable throwable) {
-                System.out.println("client completed requests -> complete response");
+                System.out.println("PrimeClientService onError. Details: "+throwable.getMessage());
+                throwable.printStackTrace();
             }
 
             @Override
             public void onCompleted() {
-                System.out.println("client completed requests -> complete response");
+                System.out.println("PrimeClientService onCompleted. Completed requests -> complete response");
             }
         };
     }
 
     static void setIsPrimeToRedis(String key, String value){
-        System.out.println("PrimeServer Id: "+PrimeServer.uuid +" is connecting on Redis "+PrimeServer.redisAddress.ip+
-                ":"+PrimeServer.redisAddress.port+ " to set number "+key);
 
         try (Jedis jedis = new Jedis(PrimeServer.redisAddress.ip, PrimeServer.redisAddress.port)){
             jedis.set(key, value);
+            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" connected on Redis "+PrimeServer.redisAddress.ip+
+                    ":"+PrimeServer.redisAddress.port+ " to set number "+key);
         }
         catch (Exception ex){
             System.out.println("PrimeServer Id: "+PrimeServer.uuid +" error connecting on Redis "+ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -93,13 +93,12 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
 
             System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer");
             streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
-
             streamRingRequestClient.onNext(nextRingMessage);
-            System.out.println("RingMessage was sent");
         }
         catch (Exception ex)
         {
             System.out.println("PrimeServer Id: "+PrimeServer.uuid +" Error sendMessageNextPrimeServerAsync:"+ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
