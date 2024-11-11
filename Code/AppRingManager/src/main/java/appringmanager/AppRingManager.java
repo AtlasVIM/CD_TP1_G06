@@ -34,6 +34,9 @@ public class AppRingManager {
     public static void main(String[] args) throws IOException, InterruptedException {
         final AppRingManager appRingManager = new AppRingManager();
         int port = 50051;
+        if (args.length == 1) {
+            port = Integer.parseInt(args[0]);
+        }
 
         appRingManager.start(port);
 

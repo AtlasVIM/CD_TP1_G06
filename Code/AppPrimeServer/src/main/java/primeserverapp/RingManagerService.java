@@ -28,7 +28,7 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
 
     static void registPrimeServer(ServerAddress myAddress){
         try {
-            blockingStub = RingManagerPrimeServiceGrpc.newBlockingStub(channel);
+            //blockingStub = RingManagerPrimeServiceGrpc.newBlockingStub(channel);
             noBlockStub = RingManagerPrimeServiceGrpc.newStub(channel);
 
             PrimeServerAddress request = PrimeServerAddress
@@ -37,12 +37,13 @@ public class RingManagerService extends RingManagerPrimeServiceGrpc.RingManagerP
                     .setPort(myAddress.port)
                     .build();
 
+            System.out.println("Registrando servidor");
             RegistPrimeServerStream response = new RegistPrimeServerStream();
             noBlockStub.registServer(request, response);
 
         }
         catch (Exception ex){
-            System.out.println("MyId is: "+PrimeServer.uuid+" Synchronous call error: "+ex.getMessage());
+            System.out.println("MyId is: "+PrimeServer.uuid+" asynchronous call error: "+ex.getMessage());
         }
     }
 

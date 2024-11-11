@@ -8,17 +8,22 @@ public class Main {
 
     //test
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(args) + "HELLO ");
+        System.out.println(Arrays.toString(args) + " This is my arguments ");
         long numero = Long.parseLong(args[0]);
         String redisIP = args[1];
         int redisPort = Integer.parseInt(args[2]);
-        Jedis jedis = new Jedis(redisIP, redisPort);
+        boolean bIsPrime = false;
 
         boolean primeBool = isPrime(numero);
-        if (primeBool) {
-            jedis.set(numero+"", "true");
-        } else {
-            jedis.set(numero+"", "false");
+
+        try (Jedis jedis = new Jedis(redisIP, redisPort)){
+            String pingResponse = jedis.ping();
+            System.out.println("PrimeCalculator connected on redis "+redisIP+":"+redisPort +" resposta comando ping "+pingResponse);
+            jedis.set(numero+"", Boolean.toString(bIsPrime));
+        }
+        catch (Exception ex){
+            System.out.println("Error connecting on redis "+redisIP+":"+redisPort+". Details: "+ex.getMessage());
+            ex.printStackTrace();
         }
 
         System.out.println("NUMBER " + numero + " IS " + (primeBool ? "PRIME!" : "NOT PRIME!"));

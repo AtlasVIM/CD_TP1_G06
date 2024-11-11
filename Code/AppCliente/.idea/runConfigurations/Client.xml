@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Client" type="Application" factoryName="Application" singleton="false">
     <option name="MAIN_CLASS_NAME" value="appcliente.Client" />
-    <module name="RingClientApp" />
-    <option name="PROGRAM_PARAMETERS" value="&quot;localhost&quot; 50051" />
+    <module name="ClientApp" />
+    <option name="PROGRAM_PARAMETERS" value="146.148.125.34 9000" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="appcliente.*" />

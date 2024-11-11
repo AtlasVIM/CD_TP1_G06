@@ -83,6 +83,8 @@ public class Client {
             System.out.println("The number '" + num + "' is " + (res.getIsPrime() ? "prime!" : "not prime!"));
         } catch (Exception e) {
             System.err.println("AN ERROR HAS OCCURRED WHILE CHECKING PRIMALITY: " +e.getMessage());
+            e.printStackTrace();
+
         }
     }
 

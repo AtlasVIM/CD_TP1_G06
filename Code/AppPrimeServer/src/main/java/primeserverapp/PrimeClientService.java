@@ -35,13 +35,11 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                         if (nrIsPrime == null) {
                             setIsPrimeToRedis(key, Boolean.toString(ringRequest.getIsPrime()));
                         }
-                        //retornar para o client numero primo.
-                        //possivel solucao: nao fazer nada aqui nesse metodo
-                        //e colocar um while na classe ClientService consultando o dicionario redis, a cada 30seg.
                     }
                     else {
                         //chamar container que calcula o numero primo
-                        //esperar uns segundos e verificar se o numero tem no redis local
+                        PrimeServer.startPrimeCalculatorContainer(key);
+
                     }
                 }
                 else {

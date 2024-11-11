@@ -12,6 +12,8 @@ import primeclientstubs.PrimeClientServiceGrpc;
 import redis.clients.jedis.Jedis;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static primeserverapp.RingManagerService.registPrimeServer;
@@ -20,9 +22,9 @@ public class PrimeServer {
 
     public static String uuid = UUID.randomUUID().toString();
     private static ServerAddress myAddress;
+    private static ServerAddress managerAddress;
     public static ServerAddress nextPrimeAddress;
     public static ServerAddress redisAddress;
-    private static ServerAddress managerAddress;
 
     private static ManagedChannel channel;
     private static PrimeClientServiceGrpc.PrimeClientServiceBlockingStub blockingStub;
@@ -56,15 +58,16 @@ public class PrimeServer {
     }
 
     //Start redis container.
+    //Required virtual machine tp01-vm-redis-machimage must be alive on google cloud
     //Required option "Expose daemon on tcp://localhost:2375 without TLS" on docker desktop enable
     //Required "docker pull redis" exec this command before
     //Required cannot have container with same name
     static void startRedisContainer(){
         String containerName = "RedisForPrime"+myAddress.port;
         String imageName="redis";
-        String dockerHOST = "tcp://localhost:2375";
+        String dockerHOST = "unix:///var/run/docker.sock";
 
-        int redisHostPort= myAddress.port+1;
+        int redisHostPort = myAddress.port+1;
 
         DockerClient dockerclient = DockerClientBuilder
                 .getInstance()
@@ -100,20 +103,24 @@ public class PrimeServer {
         }
         catch (Exception ex){
             System.out.println("PrimeServer Id: "+PrimeServer.uuid +" error connecting on Redis "+ex.getMessage());
+            ex.printStackTrace();
             return "";
         }
     }
 
     //Start redis container.
     //Required option "Expose daemon on tcp://localhost:2375 without TLS" on docker desktop enable
-    //Required "docker pull redis" exec this command before
+    //Required "docker build -t parugui/primecalculator ." exec this command before on AppPrimeCalculator project
     //Required cannot have container with same name
-    static void startIsPrimeContainer(){
-        String containerName = "RedisForPrime"+myAddress.port;
-        String imageName="redis";
-        String dockerHOST = "tcp://localhost:2375";
+    static void startPrimeCalculatorContainer(String number){
+        String containerName = "PrimeCalculatorForPrime"+myAddress.port;
+        String imageName="parugui/primecalculator";
+        String dockerHOST = "unix:///var/run/docker.sock";
 
-        int redisHostPort= myAddress.port+1;
+        List<String> command = new ArrayList<>();
+        command.add(number);
+        command.add(PrimeServer.redisAddress.ip);
+        command.add(Integer.toString(PrimeServer.redisAddress.port));
 
         DockerClient dockerclient = DockerClientBuilder
                 .getInstance()
@@ -122,20 +129,35 @@ public class PrimeServer {
                                 .dockerHost(URI.create(dockerHOST)).build()
                 ).build();
 
-        HostConfig hostConfig = HostConfig
-                .newHostConfig()
-                .withPortBindings(PortBinding.parse(redisHostPort+":6379"));
-
         CreateContainerResponse containerResponse = dockerclient
                 .createContainerCmd(imageName)
                 .withName(containerName)
-                .withHostConfig(hostConfig)
+                .withCmd(command)
                 .exec();
 
         dockerclient.startContainerCmd(containerResponse.getId()).exec();
 
-        System.out.println("Container Redis "+containerName+" ready on port "+myAddress.ip+":"+redisHostPort);
-        redisAddress = new ServerAddress(myAddress.ip, redisHostPort);
+        System.out.println("Container PrimeCalculator "+containerName+" is ready");
+    }
+
+    static void removePrimeCalculatorContainer(){
+        String containerName = "PrimeCalculatorForPrime"+myAddress.port;
+        String dockerHOST = "unix:///var/run/docker.sock";
+
+        DockerClient dockerclient = DockerClientBuilder
+                .getInstance()
+                .withDockerHttpClient(
+                        new ApacheDockerHttpClient.Builder()
+                                .dockerHost(URI.create(dockerHOST)).build()
+                ).build();
+
+        try {
+            dockerclient.removeContainerCmd(containerName).exec();
+            System.out.println("Container PrimeCalculator "+containerName+" is removed");
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
 }

@@ -20,8 +20,24 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
                     request.getNumber(),
                     false,
                     false);
-            //todo enviar esse numero calculado de volta pro client
-            //possivel solução: colocar um while consultando o dicionario redis, a cada 30seg.
+
+            //esperar uns segundos e verificar se o numero tem no redis local
+            for (int i = 0; i <= 30; i++) {
+                try {
+                    var getIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
+                    if (getIsPrime == null) {
+                        Thread.sleep(1 * 1000);
+                    }
+                    else {
+                        PrimeServer.removePrimeCalculatorContainer();
+                        responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(Boolean.getBoolean(nrIsPrime)).build());
+                        responseObserver.onCompleted();
+                        break;
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
         else {
             responseObserver.onNext(PrimalityResult.newBuilder().setIsPrime(Boolean.getBoolean(nrIsPrime)).build());
