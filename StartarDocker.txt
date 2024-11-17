@@ -29,10 +29,13 @@ docker pull redis
 docker pull parugui/primeserver
 docker pull parugui/primecalculator
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer01 -p 8000:8000 parugui/primeserver 35.240.68.5 8000 34.38.124.210 9000
-docker logs AppPrimeServer01
+docker logs --follow AppPrimeServer01
 
 docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer02 -p 8100:8100 parugui/primeserver 35.240.68.5 8100 34.38.124.210 9000
 docker logs --follow AppPrimeServer02
+
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer03 -p 8200:8200 parugui/primeserver 35.240.68.5 8200 34.38.124.210 9000
+docker logs --follow AppPrimeServer03
 
 ---Start container 
 docker start dcebf31ee888 --containerId
@@ -40,10 +43,14 @@ docker stop RedisForPrime8000
 docker stop AppPrimeServer01
 docker stop RedisForPrime8100
 docker stop AppPrimeServer02
+docker stop AppPrimeServer03
+docker stop RedisForPrime8200
 docker remove AppPrimeServer01
 docker remove AppPrimeServer02
 docker remove RedisForPrime8000
 docker remove RedisForPrime8100
+docker remove AppPrimeServer03
+docker remove RedisForPrime8200
 
 
 

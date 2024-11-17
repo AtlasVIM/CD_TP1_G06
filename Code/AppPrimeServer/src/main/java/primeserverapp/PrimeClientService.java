@@ -48,11 +48,12 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                 }
                 else {
                     if (ringRequest.getWasPrimeCalculated() && nrIsPrime == null) {
+                        System.out.println("PrimeClientService onNext. I don't have the answer. Set my local Redis. Number: "+ringRequest.getNumber()+" "+LocalDateTime.now());
                         setIsPrimeToRedis(key, Boolean.toString(ringRequest.getIsPrime()));
                         nrIsPrime = Boolean.toString(ringRequest.getIsPrime());
                     }
 
-                    System.out.println("PrimeClientService onNext. I don't have the answer for Number: "+ringRequest.getNumber()+" "+LocalDateTime.now());
+                    System.out.println("PrimeClientService onNext. Sending message to nextPrime. Number: "+ringRequest.getNumber()+" "+LocalDateTime.now());
                     sendMessageNextPrimeServerAsync(ringRequest.getPrimeServerId(),
                                             ringRequest.getNumber(),
                                             nrIsPrime == null ? false : Boolean.parseBoolean(nrIsPrime),
@@ -97,7 +98,7 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                     .setWasPrimeCalculated(isCalculated)
                     .build();
 
-            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer "+PrimeServer.nextPrimeAddress.ip+":"+PrimeServer.nextPrimeAddress.port);
+            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer "+PrimeServer.nextPrimeAddress.ip+":"+PrimeServer.nextPrimeAddress.port+ " "+LocalDateTime.now());
             streamRingRequestClient.onNext(nextRingMessage);
         }
         catch (Exception ex)
@@ -126,9 +127,9 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                 channelPrimeClient.shutdown();
                 System.out.println("Shutdown old PrimeServer. Is Terminated? "+channelPrimeClient.isTerminated() +" "+LocalDateTime.now());
                 if (!channelPrimeClient.awaitTermination(5, TimeUnit.SECONDS)){
-                    System.out.println("Waited 5 seconds. PrimeServer Is Terminated? "+channelPrimeClient.isTerminated() +" "+LocalDateTime.now());
-                    if (!channelPrimeClient.isTerminated())
-                        channelPrimeClient.shutdownNow();
+                    System.out.println("Waited 5 seconds. PrimeServer Is Terminated? "+channelPrimeClient.isTerminated() +" Is Shutdown? "+ channelPrimeClient.isShutdown()+" "+LocalDateTime.now());
+                    //if (!channelPrimeClient.isTerminated())
+                        //channelPrimeClient.shutdownNow();
                 }
 
                 System.out.println("Close channel old PrimeServer.");

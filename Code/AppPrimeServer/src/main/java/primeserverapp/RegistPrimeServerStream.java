@@ -14,7 +14,9 @@ public class RegistPrimeServerStream implements StreamObserver<NextPrimeServerAd
 
         ServerAddress nextPrimeAddress = new ServerAddress(nextPrimeServerAddress.getNextIp(), nextPrimeServerAddress.getNextPort());
 
-        if (!Objects.equals(PrimeServer.nextPrimeAddress, nextPrimeAddress)){
+        if (PrimeServer.nextPrimeAddress == null
+                || !PrimeServer.nextPrimeAddress.ip.equals(nextPrimeAddress.ip)
+                || PrimeServer.nextPrimeAddress.port != nextPrimeAddress.port){
             PrimeClientService.completeChannelWithNextPrimeServer();
             PrimeServer.nextPrimeAddress = nextPrimeAddress;
             PrimeClientService.openChannelNextPrimeServer();
