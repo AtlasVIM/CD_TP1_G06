@@ -5,11 +5,16 @@ import primeclientstubs.Number;
 import primeclientstubs.PrimalityResult;
 import primeclientstubs.PrimeClientServiceGrpc;
 
+import java.sql.Time;
+import java.time.LocalDateTime;
+
 public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImplBase {
 
 
     @Override
     public void isPrime(Number request, StreamObserver<PrimalityResult> responseObserver){
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.println("Begin "+ LocalDateTime.now());
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +", method isPrime called! Number "+request.getNumber());
 
         var nrIsPrime = PrimeServer.getIsPrimeFromRedis(Long.toString(request.getNumber()));
@@ -34,6 +39,10 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
                         var response = PrimalityResult.newBuilder().setIsPrime(Boolean.parseBoolean(nrIsPrime)).build();
                         System.out.println("Returning response: "+response.getIsPrime());
                         responseObserver.onNext(response);
+                        responseObserver.onCompleted();
+                        System.out.println("Response was send. After sendMessageNextPrimeServerAsync. Number: "+request.getNumber() +" isPrime:"+response.getIsPrime());
+                        System.out.println("End: "+LocalDateTime.now());
+                        System.out.println("-------------------------------------------------------------------------------------");
                         break;
                     }
                 } catch (Exception e) {
@@ -41,18 +50,15 @@ public class ClientService extends PrimeClientServiceGrpc.PrimeClientServiceImpl
                     e.printStackTrace();
                 }
             }
-
-            responseObserver.onCompleted();
-            System.out.println("Response was send. ");
         }
         else {
             System.out.println("We have answer in my local Redis! Number: "+request.getNumber() +" isPrime: "+nrIsPrime);
             try {
                 var response = PrimalityResult.newBuilder().setIsPrime(Boolean.parseBoolean(nrIsPrime)).build();
-                System.out.println("Returning response: "+response.getIsPrime());
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
-                System.out.println("Response was send. ");
+                System.out.println("End: "+LocalDateTime.now());
+                System.out.println("-------------------------------------------------------------------------------------");
             }
             catch (Exception ex){
                 System.out.println("Error returning answer to client. Details: "+ex.getMessage());

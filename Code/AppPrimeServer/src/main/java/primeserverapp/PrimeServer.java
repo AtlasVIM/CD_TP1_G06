@@ -13,8 +13,10 @@ import redis.clients.jedis.Jedis;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static primeserverapp.RingManagerService.registPrimeServer;
 
@@ -150,8 +152,19 @@ public class PrimeServer {
                 ).build();
 
         try {
-            dockerclient.removeContainerCmd(containerName).exec();
-            System.out.println("Container PrimeCalculator "+containerName+" is removed");
+            var containerOptional = dockerclient.listContainersCmd()
+                    .withShowAll(true)
+                    .exec()
+                    .stream()
+                    .filter(container -> container.getNames() != null &&
+                            Stream.of(container.getNames()).anyMatch(name -> name.contains(containerName)))
+                    .findFirst();
+
+            System.out.println("Container PrimeCalculator "+containerName+" exists? "+containerOptional.isPresent());
+            if (containerOptional.isPresent()) {
+                dockerclient.removeContainerCmd(containerName).exec();
+                System.out.println("Container PrimeCalculator "+containerName+" is removed");
+            }
         }
         catch (Exception ex) {
             ex.printStackTrace();

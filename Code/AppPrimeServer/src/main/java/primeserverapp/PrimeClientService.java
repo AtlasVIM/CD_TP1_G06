@@ -8,12 +8,17 @@ import primeserverstubs.RingRequest;
 import primeserverstubs.VoidResponse;
 import redis.clients.jedis.Jedis;
 
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
+
 public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractServiceImplBase {
 
     private static PrimeContractServiceGrpc.PrimeContractServiceStub noBlockStubPrimeClient;
     private static ManagedChannel channelPrimeClient;
     private static StreamObserver<RingRequest> streamRingRequestClient;
 
+    public PrimeClientService() {
+    }
 
     @Override
     public StreamObserver<RingRequest> ringMessage(StreamObserver<VoidResponse> responseObserver) {
@@ -22,7 +27,7 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
         return new StreamObserver<RingRequest>() {
             @Override
             public void onNext(RingRequest ringRequest) {
-                System.out.println("PrimeServer Id: "+PrimeServer.uuid +" receive call next from "+ringRequest.getPrimeServerId());
+                System.out.println("PrimeServer Id: "+PrimeServer.uuid +" receive call next from "+ringRequest.getPrimeServerId()+" Number: "+ringRequest.getNumber()+" "+LocalDateTime.now());
 
                 var key = Long.toString(ringRequest.getNumber());
                 var nrIsPrime = PrimeServer.getIsPrimeFromRedis(key);
@@ -47,9 +52,10 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                         nrIsPrime = Boolean.toString(ringRequest.getIsPrime());
                     }
 
+                    System.out.println("PrimeClientService onNext. I don't have the answer for Number: "+ringRequest.getNumber()+" "+LocalDateTime.now());
                     sendMessageNextPrimeServerAsync(ringRequest.getPrimeServerId(),
                                             ringRequest.getNumber(),
-                                            nrIsPrime == null ? false : Boolean.getBoolean(nrIsPrime),
+                                            nrIsPrime == null ? false : Boolean.parseBoolean(nrIsPrime),
                                             !(nrIsPrime == null));
                 }
 
@@ -91,8 +97,7 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                     .setWasPrimeCalculated(isCalculated)
                     .build();
 
-            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer");
-            streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
+            System.out.println("PrimeServer Id: "+PrimeServer.uuid +" sending ringMessage to next PrimeServer "+PrimeServer.nextPrimeAddress.ip+":"+PrimeServer.nextPrimeAddress.port);
             streamRingRequestClient.onNext(nextRingMessage);
         }
         catch (Exception ex)
@@ -109,19 +114,33 @@ public class PrimeClientService extends PrimeContractServiceGrpc.PrimeContractSe
                 .build();
 
         noBlockStubPrimeClient = PrimeContractServiceGrpc.newStub(channelPrimeClient);
+        streamRingRequestClient = noBlockStubPrimeClient.ringMessage(new RingMessageStream());
 
         System.out.println("PrimeServer Id: "+PrimeServer.uuid +" channel with NexPrimeServer "+PrimeServer.nextPrimeAddress.ip+":"+PrimeServer.nextPrimeAddress.port+" is open");
     }
 
     static void completeChannelWithNextPrimeServer(){
-        if (channelPrimeClient == null)
-            return;
+        if (channelPrimeClient != null) {
+            try {
+                streamRingRequestClient.onCompleted();
+                channelPrimeClient.shutdown();
+                System.out.println("Shutdown old PrimeServer. Is Terminated? "+channelPrimeClient.isTerminated() +" "+LocalDateTime.now());
+                if (!channelPrimeClient.awaitTermination(5, TimeUnit.SECONDS)){
+                    System.out.println("Waited 5 seconds. PrimeServer Is Terminated? "+channelPrimeClient.isTerminated() +" "+LocalDateTime.now());
+                    if (!channelPrimeClient.isTerminated())
+                        channelPrimeClient.shutdownNow();
+                }
 
-        if (!channelPrimeClient.isTerminated()) {
-            streamRingRequestClient.onCompleted();
-            channelPrimeClient.shutdown();
+                System.out.println("Close channel old PrimeServer.");
+            }
+            catch (InterruptedException ex) {
+                System.out.println("Error Closing channel with old PrimeServer.");
+                ex.printStackTrace();
 
-            System.out.println("Close channel old PrimeServer.");
+                channelPrimeClient.shutdownNow();
+                Thread.currentThread().interrupt();
+
+            }
         }
     }
 }
