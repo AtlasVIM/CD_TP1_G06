@@ -28,8 +28,14 @@ docker push parugui/primecalculator
 docker pull redis
 docker pull parugui/primeserver
 docker pull parugui/primecalculator
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer01 -p 8000:8000 parugui/primeserver 34.77.125.49 8000 146.148.125.34 9000
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer01 -p 8000:8000 parugui/primeserver 104.199.18.88 8000 35.205.45.57 9000
 docker logs AppPrimeServer01
+
+
+---Start container 
+docker start dcebf31ee888 --containerId
+docker stop dcebf31ee888
+docker remove dcebf31ee888
 
 
 
