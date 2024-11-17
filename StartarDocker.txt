@@ -28,33 +28,47 @@ docker push parugui/primecalculator
 docker pull redis
 docker pull parugui/primeserver
 docker pull parugui/primecalculator
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer01 -p 8000:8000 parugui/primeserver 35.240.68.5 8000 34.38.124.210 9000
+
+--vm prime 01
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer01 -p 8100:8100 parugui/primeserver 104.155.45.41 8100 35.240.68.5 9000
 docker logs --follow AppPrimeServer01
 
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer02 -p 8100:8100 parugui/primeserver 35.240.68.5 8100 34.38.124.210 9000
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer02 -p 8200:8200 parugui/primeserver 104.155.45.41 8200 35.240.68.5 9000
 docker logs --follow AppPrimeServer02
 
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer03 -p 8200:8200 parugui/primeserver 35.240.68.5 8200 34.38.124.210 9000
+
+---vm prime 02
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer03 -p 8300:8300 parugui/primeserver 34.38.124.210 8300 35.240.68.5 9000
 docker logs --follow AppPrimeServer03
 
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock --name AppPrimeServer04 -p 8400:8400 parugui/primeserver 34.38.124.210 8400 35.240.68.5 9000
+docker logs --follow AppPrimeServer04
+
 ---Start container 
-docker start dcebf31ee888 --containerId
-docker stop RedisForPrime8000
-docker stop AppPrimeServer01
 docker stop RedisForPrime8100
+docker stop RedisForPrime8200
+docker stop RedisForPrime8300
+docker stop RedisForPrime8400
+docker stop AppPrimeServer01
 docker stop AppPrimeServer02
 docker stop AppPrimeServer03
-docker stop RedisForPrime8200
+docker stop AppPrimeServer04
 docker remove AppPrimeServer01
 docker remove AppPrimeServer02
-docker remove RedisForPrime8000
-docker remove RedisForPrime8100
 docker remove AppPrimeServer03
+docker remove AppPrimeServer04
+docker remove RedisForPrime8100
 docker remove RedisForPrime8200
-
+docker remove RedisForPrime8300
+docker remove RedisForPrime8400
 
 
 docker stop AppRingManager
 docker remove AppRingManager
 
+
+
+--Alterações no código
+CloseChannel PrimeServer
+Logs
 
