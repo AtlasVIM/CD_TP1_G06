@@ -1,0 +1,27 @@
+Register - nunca falha
+RabbitMq - Docker LAB03
+Spread - LAB04
+Upload Foto - Utilizar Gson
+Cliente irá ter 2 contratos GRPC. 
+	Contrato com o Register pedindo IP de um Svc. 
+	E contrato com o Svc, 
+		Pedido de upload de foto e retorna Id da foto. 
+		Pedido de donwload de foto, passa como parametro o Id e retorna foto marcada/ou retorna msg dizendo que esta em processamento.
+O Leader deve manter uma lista de pedidos em curso pendentes, e passar para o novo servidor svc que ficar online.
+
+
+1 - O cliente se regista com o register, e o register devolve um IP e porta de um svc disponivel.
+2 - O cliente escolhe foto pra upload e manda para o svc conectado
+3 - O svc grava essa foto no ficheiro partilhado Gluster.
+4 - O svc envia uma mensagem para o rabbitmq com o pedido de processamento da imagem. A mensagem deve ter nome da foto, e as palavras a serem marcadas.
+5 - O rabbitmq envia mensagem para o worker.
+6 - O Worker processa e marca a foto e grava no gluster com o nome da foto mais sufixo marks. Ex: foto_marks.png
+7 - O worker envia uma msg multicast para o Leader svc sinalizando que acabou o processamento.
+8 - O Leader atualiza a lista de pedidos, que foi conluido.
+9 - 
+
+
+
+Duvidas?
+1 - O cliente fica esperando a foto marcada para download? Ou em outro momento ele faz um segundo pedido de download?
+2 - 
