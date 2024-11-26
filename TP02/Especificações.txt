@@ -5,28 +5,39 @@ Upload Foto - Utilizar Gson
 Cliente irá ter 2 contratos GRPC. 
 	Contrato com o Register pedindo IP de um Svc. 
 	E contrato com o Svc, 
-		Pedido de upload de foto e retorna Id da foto. 
+		Pedido de upload de foto, passa como parametro a foto e o conjunto de palavras, e retorna Id da foto. 
 		Pedido de donwload de foto, passa como parametro o Id e retorna foto marcada/ou retorna msg dizendo que esta em processamento.
-O Leader deve manter uma lista de pedidos em curso pendentes, e passar para o novo servidor svc que ficar online.
-
+O Leader deve manter uma lista de pedidos em curso pendentes, e passar a informacao da lista para o novo servidor svc que ficar online.
+Worker 3 serviços funcionando
+Svc minimo de 1, fazer testes lançando até 5 maquinas.
+Glustes 3 serviços funcionando
 
 1 - O cliente se regista com o register, e o register devolve um IP e porta de um svc disponivel.
-2 - O cliente escolhe foto pra upload e manda para o svc conectado
+2 - O cliente escolhe foto pra upload, e conjunto de palavras e manda para o svc conectado
 3 - O svc grava essa foto no ficheiro partilhado Gluster.
 4 - O svc envia uma mensagem para o rabbitmq com o pedido de processamento da imagem. A mensagem deve ter nome da foto, e as palavras a serem marcadas.
 5 - O rabbitmq envia mensagem para o worker.
 6 - O Worker processa e marca a foto e grava no gluster com o nome da foto mais sufixo marks. Ex: foto_marks.png
 7 - O worker envia uma msg multicast para o Leader svc sinalizando que acabou o processamento.
-8 - O Leader atualiza a lista de pedidos, que foi conluido.
+8 - O Leader atualiza a lista de pedidos, que este pedido de Id foi concluido.
 9 - O cliente esta pronto para fazer download da foto.
 
-Projetos
+Tarefas
 1 - Projeto de Contrato GRPC Entre Client e Register
 2 - Projeto de Contrato GRPC entre Client e Svc
 3 - Worker - Vai escutar rabbitmq, vai Marcar as fotos, vai acessar o gluster e vai mandar multicast para o svc.
 4 - Register - Vai registar client via GRPC, retornar IP do Svc para o Client, Vai se comunicar com o Svc via multicast
 5 - Client - Vai enviar pedido de upload para o Svc via GRPC e vai fazer pedido de download para o Svc via GRPC.
 6 - Svc - Vai se comunicar com o client via GRPC, se comunicar com o Register via multicast, vai gravar/recuperar foto no gluster, enviar mensagem rabbitmq
+7 - Instalar o gluster
+8 - Instalar e configurar Rabitmq
+9 - Instalar e configurar Spread
+
+Objetivos da aula de 3h 03/12
+1 - Criar projeto com os contratos GRPC (Tarefa 1 e 2)
+2 - Instalar o gluster
+3 - Instalar e configurar Rabitmq
+4 - Instalar e configurar Spread
 
 
 
