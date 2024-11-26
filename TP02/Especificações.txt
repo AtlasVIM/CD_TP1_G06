@@ -18,10 +18,16 @@ O Leader deve manter uma lista de pedidos em curso pendentes, e passar para o no
 6 - O Worker processa e marca a foto e grava no gluster com o nome da foto mais sufixo marks. Ex: foto_marks.png
 7 - O worker envia uma msg multicast para o Leader svc sinalizando que acabou o processamento.
 8 - O Leader atualiza a lista de pedidos, que foi conluido.
-9 - 
+9 - O cliente esta pronto para fazer download da foto.
+
+Projetos
+1 - Projeto de Contrato GRPC Entre Client e Register
+2 - Projeto de Contrato GRPC entre Client e Svc
+3 - Worker - Vai escutar rabbitmq, vai Marcar as fotos, vai acessar o gluster e vai mandar multicast para o svc.
+4 - Register - Vai registar client via GRPC, retornar IP do Svc para o Client, Vai se comunicar com o Svc via multicast
+5 - Client - Vai enviar pedido de upload para o Svc via GRPC e vai fazer pedido de download para o Svc via GRPC.
+6 - Svc - Vai se comunicar com o client via GRPC, se comunicar com o Register via multicast, vai gravar/recuperar foto no gluster, enviar mensagem rabbitmq
 
 
 
-Duvidas?
-1 - O cliente fica esperando a foto marcada para download? Ou em outro momento ele faz um segundo pedido de download?
-2 - 
+ 
