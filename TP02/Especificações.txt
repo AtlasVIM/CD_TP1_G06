@@ -12,6 +12,7 @@ Worker 3 serviços funcionando
 Svc minimo de 1, fazer testes lançando até 5 maquinas.
 Glustes 3 serviços funcionando
 
+Fluxo 
 1 - O cliente se regista com o register, e o register devolve um IP e porta de um svc disponivel.
 2 - O cliente escolhe foto pra upload, e conjunto de palavras e manda para o svc conectado
 3 - O svc grava essa foto no ficheiro partilhado Gluster.
