@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "svcclientstubs";
+
+package svcclientservice; // package do proto
+
+service SvcClientService{
+  rpc upload(UploadRequest) returns (UploadResponse);
+  rpc download(DownloadRequest) returns (DownloadResponse);
+}
+
+message UploadRequest{
+  string pathPhoto = 1;
+  string marks = 2;
+}
+
+message UploadResponse{
+  int32 nrRequest = 1;
+}
+
+message DownloadRequest{
+  int32 nrRequest = 1;
+  string pathToSave = 2;
+}
+
+message DownloadResponse{
+  string message = 1;
+}
