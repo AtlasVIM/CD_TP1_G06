@@ -30,9 +30,9 @@ Tarefas
 4 - Register - Vai registar client via GRPC, retornar IP do Svc para o Client, Vai se comunicar com o Svc via multicast
 5 - Client - Vai enviar pedido de upload para o Svc via GRPC e vai fazer pedido de download para o Svc via GRPC.
 6 - Svc - Vai se comunicar com o client via GRPC, se comunicar com o Register via multicast, vai gravar/recuperar foto no gluster, enviar mensagem rabbitmq
-7 - Instalar o gluster
+
 8 - Instalar e configurar Rabitmq
-9 - Instalar e configurar Spread
+
 
 Objetivos da aula de 3h 03/12
 1 - Criar projeto com os contratos GRPC (Tarefa 1 e 2)
@@ -43,6 +43,11 @@ Objetivos da aula de 3h 03/12
 
 
 Definir protocolo de mensagem entre os spreads...
+
+
+FEITO:
+7 - Instalar o gluster
+9 - Instalar e configurar Spread
 
 
 
