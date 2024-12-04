@@ -24,8 +24,7 @@ Fluxo
 9 - O cliente esta pronto para fazer download da foto.
 
 Tarefas
-1 - Projeto de Contrato GRPC Entre Client e Register - ok
-2 - Projeto de Contrato GRPC entre Client e Svc - ok
+
 3 - Worker - Vai escutar rabbitmq, vai Marcar as fotos, vai acessar o gluster e vai mandar multicast para o svc.
 4 - Register - Vai registar client via GRPC, retornar IP do Svc para o Client, Vai se comunicar com o Svc via multicast
 5 - Client - Vai enviar pedido de upload para o Svc via GRPC e vai fazer pedido de download para o Svc via GRPC.
@@ -47,6 +46,8 @@ Como copiar 2 ficheiros bloco a bloco no java
 
 
 FEITO:
+1 - Projeto de Contrato GRPC Entre Client e Register - ok
+2 - Projeto de Contrato GRPC entre Client e Svc - ok
 7 - Instalar o gluster
 9 - Instalar e configurar Spread
 
