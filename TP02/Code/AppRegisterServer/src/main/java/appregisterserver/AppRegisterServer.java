@@ -14,15 +14,11 @@ public class AppRegisterServer {
 
             io.grpc.Server svc = ServerBuilder
                     .forPort(port)
-                    //.addService(new RingManagerService(myAddress, managerAddress))
-                    //.addService(new PrimeClientService())
-                    //.addService(new ClientService())
+                    .addService(new ClientService())
                     .build();
 
             svc.start();
             System.out.println(String.format("RegisterServer: %s started. Listening on Port: %s ", port));
-            //startRedisContainer();
-            //registPrimeServer(myAddress);
 
             svc.awaitTermination();
             svc.shutdown();
