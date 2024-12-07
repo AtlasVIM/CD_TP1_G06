@@ -11,9 +11,7 @@ service SvcClientService{
 }
 
 message UploadRequest{
-  string imageName = 1;
-  string marks = 2;
-  bytes imageBlock = 3;
+  bytes uploadObject = 1;
 }
 
 message UploadResponse{
@@ -25,7 +23,5 @@ message DownloadRequest{
 }
 
 message DownloadResponse{
-  string message = 1;
-  string imageName = 2;
-  bytes imageBlock = 3;
+  bytes downloadObject = 1;
 }
