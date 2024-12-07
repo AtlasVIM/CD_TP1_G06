@@ -23,6 +23,17 @@ Fluxo
 8 - O Leader atualiza a lista de pedidos, que este pedido de Id foi concluido.
 9 - O cliente esta pronto para fazer download da foto.
 
+
+	Register faz parte do grupo do spread
+	Svc ao entrar, ou sair grupo recebe atualizacao atraves do spread. Descobrir mecanismo de enviar ip e porto
+	
+	Precisa de lider para sincronizar pedidos..
+	
+	Cliente pode fazer pedido para trocar de servidor
+	Worker envia mensagem com multicast
+	Cliente envia arquivo em blocos
+	Fazer testes de cliente para envio de arquivo em bloco
+
 Tarefas
 
 3 - Worker - Vai escutar rabbitmq, vai Marcar as fotos, vai acessar o gluster e vai mandar multicast para o svc.
