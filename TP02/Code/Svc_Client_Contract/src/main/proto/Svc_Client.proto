@@ -11,15 +11,18 @@ service SvcClientService{
 }
 
 message UploadRequest{
-  bytes uploadObject = 1;
+  string id = 1;
+  int32 chunkIndex = 2;
+  int32 totalChunks = 3;
+  bytes uploadObject = 4;
 }
 
 message UploadResponse{
-  int32 nrRequest = 1;
+  string idRequest = 1;
 }
 
 message DownloadRequest{
-  int32 nrRequest = 1;
+  string idRequest = 1;
 }
 
 message DownloadResponse{

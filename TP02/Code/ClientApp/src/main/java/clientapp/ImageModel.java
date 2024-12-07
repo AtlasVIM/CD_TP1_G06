@@ -1,15 +1,18 @@
-package org.example;
+package clientapp;
+
+import java.util.Arrays;
 
 public class ImageModel {
+    private String id;
     private String imageName;
     private String image;
-
     private String[] marks;
 
-
     public ImageModel() {
-
     }
+
+    public String getId() {return id;}
+    public void setId(String id) {this.id = id; }
 
     public String getImageName() {
         return imageName;
@@ -38,8 +41,9 @@ public class ImageModel {
     @Override
     public String toString() {
         return "Metadata{" +
+                "id='" + id + '\'' +
                 "imageName='" + imageName + '\'' +
-                ", marks='" + marks + '\'' +
+                ", marks='" + Arrays.toString(marks) + '\'' +
                 ", image='" + image + '\'' +
                 '}';
     }

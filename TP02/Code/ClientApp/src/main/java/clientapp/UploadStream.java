@@ -1,4 +1,4 @@
-package org.example;
+package clientapp;
 
 import io.grpc.stub.StreamObserver;
 import svcclientstubs.UploadResponse;
