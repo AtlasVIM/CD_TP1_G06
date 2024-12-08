@@ -1,0 +1,12 @@
+Preparar maquinas para apresentação
+
+1 - Ligar VM rabbitMQ 
+	sudo docker start rabbitmg
+		Acessar http://34.76.4.1:15672/
+			usuario: guest
+			Senha: guest
+			
+2 - Ligar SvcServer
+	1 Parametro porta do Svc,
+	2 Parametro Ip RabbitMq
+	java -jar SvcServer-1.0-jar-with-dependencies.jar  8000, 34.76.4.1, 

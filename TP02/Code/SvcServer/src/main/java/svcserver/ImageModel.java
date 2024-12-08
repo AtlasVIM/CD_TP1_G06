@@ -42,9 +42,8 @@ public class ImageModel {
     public String toString() {
         return "Metadata{" +
                 "id='" + id + '\'' +
-                "imageName='" + imageName + '\'' +
-                ", marks='" + Arrays.toString(marks) + '\'' +
-                ", image='" + image + '\'' +
+                ",imageName='" + imageName + '\'' +
+                ",marks='" + String.join(",", marks) + '\'' +
                 '}';
     }
 
