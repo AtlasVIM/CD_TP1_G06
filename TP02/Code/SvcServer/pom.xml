@@ -41,6 +41,11 @@
       <artifactId>amqp-client</artifactId>
       <version>5.22.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.spread</groupId>
+      <artifactId>spread</artifactId>
+      <version>4.4.0</version>
+    </dependency>
   </dependencies>
 
   <build>

@@ -22,7 +22,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
         return new StreamObserver<UploadRequest>() {
             @Override
             public void onNext(UploadRequest uploadRequest) {
-                System.out.println("SvcServer receive call next");
+                //System.out.println("SvcServer receive call next");
 
                 byte[] chunk = uploadRequest.getUploadObject().toByteArray();
                 try {
@@ -51,9 +51,9 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
                 //System.out.println(imageModel.getId());
 
                 byte[] imageBytes = Base64.getDecoder().decode(imageModel.getImage());
-                String destinoGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();//TODO Usar essa variavel
+                String destinoGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
 
-                try (FileOutputStream fos = new FileOutputStream("C:\\Downloads\\output_image.png")) {
+                try (FileOutputStream fos = new FileOutputStream(destinoGlusterFS)) {
                     fos.write(imageBytes);
                     System.out.println("Svc Image saved successfully: "+imageModel.getId()+", "+imageModel.getImageName());
 

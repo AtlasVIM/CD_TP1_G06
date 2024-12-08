@@ -62,6 +62,30 @@ FEITO:
 7 - Instalar o gluster
 9 - Instalar e configurar Spread
 
+----------------------------
+DIA 08/12 - Proximas Tarefas.
+
+1- SvcServer - 
+	Implementar Algoritmo de Eleição Bully.
+	Criar uma lista atualizada de servidores
+	Criar uma lista atualizada de pedidos request de processamento de fotos.
+	Enviar foto via metodo download em blocos, caso ainda nao esteja processada, enviar msg.	
+2 - Register.
+	Entrar no grupo do spread.
+	Ao entrar novo servidor no grupo ou sair, atualizar lista.
+	Enviar IP e Porto do SvcServer para Client.
+3 - Worker.
+	Consumir Fila RabitMq
+	Entrar no grupo do spread.
+	Atualizar Lista de pedidos de request de processamento de fotos.
+4 - Client.
+	Receber Ip e Porto do Register. Comentei o metodo.
+	Receber a foto download via blocos
+	
+	
+	
+
+
 
 
  

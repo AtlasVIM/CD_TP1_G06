@@ -1,12 +1,46 @@
 Preparar maquinas para apresentação
+C:\Downloads\Teste.png
 
 1 - Ligar VM rabbitMQ 
-	sudo docker start rabbitmg
+	$ sudo docker start rabbitmg
 		Acessar http://34.76.4.1:15672/
 			usuario: guest
 			Senha: guest
-			
-2 - Ligar SvcServer
-	1 Parametro porta do Svc,
-	2 Parametro Ip RabbitMq
-	java -jar SvcServer-1.0-jar-with-dependencies.jar  8000, 34.76.4.1, 
+
+---------------------------
+2 - Ligar gluster nas VMs
+
+	gluster para Iniciar
+		$ sudo service glusterd status
+		$ sudo service glusterd start
+		$ ls /var/sharedfiles
+		
+10.132.0.16 svc-tap2-01 --Gluster nao esta funcionando
+10.132.0.19 svc-tpa2-rabbitmq-broker
+10.132.0.20 svc-tpa2-spread
+
+mount | grep glusterfs
+sudo mount -t glusterfs svc-tpa2-rabbitmq-broker:/glustervol /var/sharedfiles
+sudo mount -t glusterfs svc-tpa2-spread:/glustervol /var/sharedfiles
+
+sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles --Não funciona, da erro
+
+------------------------
+3 - Spread
+	spreadNode1 10.132.0.16
+	spreadNode2 10.132.0.19
+	spreadNode3 10.132.0.20
+	
+	DaemonUser = Servers
+	DaemonGroup = Servers
+	
+	Iniciar serviço
+ $/usr/local/sbin/spread -c /usr/local/etc/vmsSpread.conf > /tmp/spreadlogs 2>&1 &
+
+--------------------------------
+4 - Ligar SvcServer
+	1 Parametro ip do Svc,
+	2 Parametro porta do Svc,
+	3 Parametro Ip RabbitMq
+	4 Parametro Ip Spread
+	java -jar /var/tp02/SvcServer.jar 34.78.207.63 8000 34.76.4.1 34.78.207.63 

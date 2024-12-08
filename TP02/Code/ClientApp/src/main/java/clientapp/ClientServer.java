@@ -42,7 +42,7 @@ public class ClientServer {
 
             svcChannel = ManagedChannelBuilder
                     //.forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
-                    .forAddress("localhost", 50051)
+                    .forAddress("34.78.207.63", 8000)
                     .usePlaintext()
                     .build();
 
@@ -111,7 +111,7 @@ public class ClientServer {
         int totalChunks = (int) Math.ceil((double) imageModelBytes.length / chunkSize);
         int chunkIndex = 0;
 
-        System.out.println("Uploading Image, please hold ...");
+        //System.out.println("Uploading Image, please hold ...");
 
         while (chunkIndex * chunkSize < imageModelBytes.length) {
             int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
