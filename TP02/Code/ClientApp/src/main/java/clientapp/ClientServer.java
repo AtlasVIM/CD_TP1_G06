@@ -114,20 +114,28 @@ public class ClientServer {
         //System.out.println("Uploading Image, please hold ...");
 
         while (chunkIndex * chunkSize < imageModelBytes.length) {
-            int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
-            byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
-            System.arraycopy(imageModelBytes, chunkIndex * chunkSize, chunk, 0, chunk.length);
 
-            UploadRequest uploadRequest = UploadRequest.newBuilder()
-                        .setId(id)
-                        .setUploadObject(ByteString.copyFrom(chunk))
-                        .setTotalChunks(totalChunks)
-                        .setChunkIndex(chunkIndex++)
-                        .build();
+            UploadRequest uploadRequest = CreateUploadRequestWithChunk(imageModelBytes, chunkIndex++,
+                    chunkSize, id, totalChunks);
+
             req.onNext(uploadRequest);
         }
         req.onCompleted();
         System.out.println("Upload Image has been complete. Waiting Request Id...");
+    }
+
+    private static UploadRequest CreateUploadRequestWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
+                                                     String id, int totalChunks){
+        int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
+        byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
+        System.arraycopy(imageModelBytes, chunkIndex * chunkSize, chunk, 0, chunk.length);
+
+        return UploadRequest.newBuilder()
+                .setId(id)
+                .setUploadObject(ByteString.copyFrom(chunk))
+                .setTotalChunks(totalChunks)
+                .setChunkIndex(chunkIndex)
+                .build();
     }
 
     private static void download() {

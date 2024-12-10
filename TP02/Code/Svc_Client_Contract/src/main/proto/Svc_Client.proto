@@ -26,5 +26,9 @@ message DownloadRequest{
 }
 
 message DownloadResponse{
-  bytes downloadObject = 1;
+  bool processCompleted = 1;
+  string message = 2;
+  bytes downloadObject = 3;
+  int32 chunkIndex = 4;
+  int32 totalChunks = 5;
 }
