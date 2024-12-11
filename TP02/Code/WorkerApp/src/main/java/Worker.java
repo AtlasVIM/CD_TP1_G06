@@ -28,7 +28,6 @@ public class Worker {
     // Spread group for notification of completed tasks
     private static final String SPREAD_GROUP_NAME = "Servers";
     private SpreadConnection spreadConnection;
-    private SpreadGroup spreadGroup;
 
     /**
      * Constructs the Worker object and sets up connections with Spread and RabbitMQ.
@@ -39,10 +38,8 @@ public class Worker {
         // Configure connection with Spread
         spreadConnection = new SpreadConnection();
         spreadConnection.connect(null, 0, "Worker", false, true);
+        System.out.println("Worker connected to Spread!");
 
-        // Join the Spread group
-        spreadGroup = new SpreadGroup();
-        spreadGroup.join(spreadConnection, SPREAD_GROUP_NAME);
     }
 
     /**
@@ -82,18 +79,18 @@ public class Worker {
 
                     // Process the image and then notify completion
                     processImage(fileName, words);
-                    notifyCompletion(fileName);   // Send completion notification
+                    notifyCompletion(fileName);
 
                     // Acknowledge message processing
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
-                    System.out.println("Message processed and confirmed.");
+                    System.out.println("Message processed and confirmed!");
 
                 } catch (Exception e) {
                     System.err.println("Error processing message: " + e.getMessage());
 
                     // Reject message and requeue if there's an error
                     channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, true);
-                    System.out.println("Message rejected and requeued.");
+                    System.out.println("Message rejected and requeued!");
                 }
             }, consumerTag -> {});
         }
@@ -133,7 +130,7 @@ public class Worker {
      */
     private void notifyCompletion(String fileName) throws Exception {
         // Create and send a notification message to Spread group
-        String notification = "Processed: " + fileName +"uploaded by user!";
+        String notification = "Processed: " + fileName +" uploaded by user!";
         SpreadMessage spreadMessage = new SpreadMessage();
         spreadMessage.setReliable(); // Ensure message delivery reliability
         spreadMessage.addGroup(SPREAD_GROUP_NAME); // Send to the "Servers" group
