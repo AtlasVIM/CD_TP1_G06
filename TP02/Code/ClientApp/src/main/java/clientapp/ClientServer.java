@@ -26,7 +26,7 @@ public class ClientServer {
 
     public static void main(String[] args) {
         try {
-            /*managerIP = args[0];
+            managerIP = args[0];
             managerPort = Integer.parseInt(args[1]);
 
             registerChannel = ManagedChannelBuilder
@@ -38,16 +38,14 @@ public class ClientServer {
             registerBlockStub = RegisterClientServiceGrpc.newBlockingStub(registerChannel);
             System.out.println("Register Server at " + managerIP + ":" + managerPort + " connected");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
-*/
+
 
             svcChannel = ManagedChannelBuilder
-                    //.forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
-                    .forAddress("34.78.207.63", 8000)
+                    .forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
                     .usePlaintext()
                     .build();
 
-            //System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
-            System.out.println("Connected to SVC Server at localhost:50051");
+            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
@@ -114,20 +112,28 @@ public class ClientServer {
         //System.out.println("Uploading Image, please hold ...");
 
         while (chunkIndex * chunkSize < imageModelBytes.length) {
-            int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
-            byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
-            System.arraycopy(imageModelBytes, chunkIndex * chunkSize, chunk, 0, chunk.length);
 
-            UploadRequest uploadRequest = UploadRequest.newBuilder()
-                        .setId(id)
-                        .setUploadObject(ByteString.copyFrom(chunk))
-                        .setTotalChunks(totalChunks)
-                        .setChunkIndex(chunkIndex++)
-                        .build();
+            UploadRequest uploadRequest = CreateUploadRequestWithChunk(imageModelBytes, chunkIndex++,
+                    chunkSize, id, totalChunks);
+
             req.onNext(uploadRequest);
         }
         req.onCompleted();
         System.out.println("Upload Image has been complete. Waiting Request Id...");
+    }
+
+    private static UploadRequest CreateUploadRequestWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
+                                                     String id, int totalChunks){
+        int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
+        byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
+        System.arraycopy(imageModelBytes, chunkIndex * chunkSize, chunk, 0, chunk.length);
+
+        return UploadRequest.newBuilder()
+                .setId(id)
+                .setUploadObject(ByteString.copyFrom(chunk))
+                .setTotalChunks(totalChunks)
+                .setChunkIndex(chunkIndex)
+                .build();
     }
 
     private static void download() {
@@ -135,48 +141,76 @@ public class ClientServer {
         System.out.println("Type image ID to download: ");
         Scanner idScanner = new Scanner(System.in);
         String requestId = idScanner.next();
+        System.out.println("Type path to store file");
+        Scanner pathScanner = new Scanner(System.in);
+        String path = pathScanner.nextLine();
         DownloadRequest req = DownloadRequest
                 .newBuilder()
                 .setIdRequest(requestId)
                 .build();
 
+
+
         StreamObserver<DownloadResponse> res = new StreamObserver<>() {
+            FileOutputStream fileOutputStream;
+            BufferedOutputStream bufferedOutputStream;
 
             @Override
             public void onNext(DownloadResponse downloadResponse) {
-                System.out.println("DOWNLOADING IMAGE ");
+
                 try {
+                    System.out.println("DOWNLOADING IMAGE ");
                     Gson gson = new Gson();
                     byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
                     String jsonString = new String(byteArr, StandardCharsets.UTF_8);
                     ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
 
-                    FileOutputStream outputStream = new FileOutputStream(downloadedImageObj.getImageName());
+                    if (fileOutputStream == null && bufferedOutputStream == null) {
 
-                    //FALTA FAZER O DOWNLOAD (BUFFERED WRITTING)
+                        File downloadedImage = new File(path, downloadedImageObj.getImageName());
+
+                        fileOutputStream = new FileOutputStream(downloadedImage, true);
+                        bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+
+                    }
+                    byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
+
+                    bufferedOutputStream.write(imgData);
+                    bufferedOutputStream.flush();
+
 
                 } catch (Exception e) {
-                    System.err.println("Error writing to file: " + e.getMessage());
+                        e.printStackTrace();
                 }
-
             }
 
             @Override
             public void onError(Throwable throwable) {
-
+                System.out.println("DOWNLOAD ERROR: " + throwable.getMessage());
+                try {
+                    bufferedOutputStream.close();
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
             public void onCompleted() {
-
+                System.out.println("DOWNLOAD COMPLETED");
+                try {
+                    bufferedOutputStream.close();
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
+
+
         };
 
-        try {
+        svcStub.download(req,res);
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
 
     }
 
@@ -206,7 +240,37 @@ public class ClientServer {
     }
 
     private static void newSvcServer() {
+        if (svcChannel != null && !svcChannel.isShutdown()) {
+            System.out.println(" SHUTTING DOWN CONNECTION WITH SVC SERVER");
+            svcChannel.shutdownNow();
+            System.out.println("CONNECTING TO NEW SERVER");
+            SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
 
+
+            svcChannel = ManagedChannelBuilder
+                    .forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
+                    .usePlaintext()
+                    .build();
+
+            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+
+            svcStub = SvcClientServiceGrpc.newStub(svcChannel);
+            svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
+        } else if (svcChannel == null) {
+            System.out.println("CONNECTING TO NEW SERVER");
+            SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
+
+
+            svcChannel = ManagedChannelBuilder
+                    .forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
+                    .usePlaintext()
+                    .build();
+
+            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+
+            svcStub = SvcClientServiceGrpc.newStub(svcChannel);
+            svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
+        }
     }
 
 

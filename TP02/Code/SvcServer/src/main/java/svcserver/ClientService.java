@@ -2,12 +2,11 @@ package svcserver;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import svcclientstubs.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeoutException;
@@ -74,13 +73,82 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
 
     @Override
     public void download(DownloadRequest request, StreamObserver<DownloadResponse> responseObserver) {
-        super.download(request, responseObserver);
+        var idRequest = request.getIdRequest();
+
+        //TODO buscar nome imagem lista processos
+        //TODO verificar se processo foi finalizado
+
+        String sourceGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
+        byte[] imageModelBytes = new byte[0];
+        try {
+            imageModelBytes = BuildImageModelInBytesWithImage(sourceGlusterFS);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            DownloadResponse responseError = DownloadResponse.newBuilder()
+                    .setProcessCompleted(false)
+                    .setMessage("An unexpected error occurred")
+                    .build();
+            responseObserver.onNext(responseError);
+            responseObserver.onCompleted();
+        }
+
+        int chunkSize = 1024; // Tamanho do bloco
+        int totalChunks = (int) Math.ceil((double) imageModelBytes.length / chunkSize);
+        int chunkIndex = 0;
+
+        while (chunkIndex * chunkSize < imageModelBytes.length) {
+
+            DownloadResponse response = CreateDownloadResponseWithChunk(imageModelBytes, chunkIndex++,
+                    chunkSize, totalChunks);
+
+            responseObserver.onNext(response);
+        }
+
+        responseObserver.onCompleted();
+        System.out.println("Download Image has been complete.. Request id: "+idRequest);
+    }
+
+    private static DownloadResponse CreateDownloadResponseWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
+                                                              int totalChunks){
+        int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
+        byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
+        System.arraycopy(imageModelBytes, chunkIndex * chunkSize, chunk, 0, chunk.length);
+
+        return DownloadResponse.newBuilder()
+                .setProcessCompleted(true)
+                .setDownloadObject(ByteString.copyFrom(chunk))
+                .setTotalChunks(totalChunks)
+                .setChunkIndex(chunkIndex)
+                .build();
     }
 
     public void sendNewMessageToRabbitMQ(ImageModel imageModel) throws IOException, TimeoutException {
         var message = imageModel.toString();
         SvcServer.channelRabbitMq.basicPublish("ExchangeD", "", true, null, message.getBytes());
         System.out.println("Svc Message Sent to RabbitMQ:" + message);
+    }
+
+    private static byte[] BuildImageModelInBytesWithImage(String imagePath) throws FileNotFoundException {
+        Gson gson = new GsonBuilder().create();
+        File img = new File(imagePath);
+
+        ImageModel imgObj = new ImageModel();
+        imgObj.setImageName(img.getName());
+
+        byte[] fileContent = new byte[(int) img.length()]; //Carrega imagem na memoria
+        FileInputStream imgInputStream = new FileInputStream(img);
+
+        try {
+            imgInputStream.read(fileContent);
+            imgInputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String encodedString = Base64.getEncoder().encodeToString(fileContent);
+
+        imgObj.setImage(encodedString);
+        String base64Img = gson.toJson(imgObj);
+        return base64Img.getBytes(StandardCharsets.UTF_8);
     }
 
 }
