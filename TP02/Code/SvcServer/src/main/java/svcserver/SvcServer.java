@@ -17,23 +17,25 @@ import java.util.concurrent.TimeoutException;
 public class SvcServer {
     public static Channel channelRabbitMq;
     public static SpreadGroupManager spreadManager;
-    public static String SpreadUser = "Servers";
-    public static String SpreadGroup = "Servers";
+    public final static String SpreadUser = "Servers";
+    public final static String SpreadGroup = "Servers";
+    public final static boolean debugMode = true;
     static Logger logger = new SimpleLoggerFactory().getLogger("RabbitMQ-configurator");
-    public static boolean debugMode = true;
+    public static String myIp;
+    public static int myPort;
 
     public static void main(String[] args){
 
         try {
-            int myPort = 50051;
-            String myIp = "34.78.207.63";
-            String ipRabbitMQ = "34.76.4.1";
-            String ipSpread = "34.78.207.63";
+            myPort = 50051;
+            myIp = "34.78.207.63";
+            String rabbitMQ_Ip = "34.76.4.1";
+            String spreadIp = "34.78.207.63";
             if (args.length == 5) {
                 myIp = args[0];
                 myPort = Integer.parseInt(args[1]);
-                ipRabbitMQ = args[2];
-                ipSpread = args[3];
+                rabbitMQ_Ip = args[2];
+                spreadIp = args[3];
             }
 
             io.grpc.Server svc = ServerBuilder
@@ -43,8 +45,8 @@ public class SvcServer {
 
             svc.start();
             System.out.println(String.format("SvcServer started. Listening on Port: %s ", myPort));
-            connectToRabbitMq(ipRabbitMQ);
-            connectToSpread(myIp, myPort, ipSpread);
+            connectToRabbitMq(rabbitMQ_Ip);
+            connectToSpread(myIp, myPort, spreadIp);
 
             svc.awaitTermination();
             svc.shutdown();
@@ -62,14 +64,16 @@ public class SvcServer {
         Connection connection = factory.newConnection();
         channelRabbitMq = connection.createChannel();
         channelRabbitMq.addReturnListener(new MessageRabbitMQ());
-        System.out.println("SvcServer connected to RabbitMQ at "+ipRabbitMQ+":5672");
+        System.out.println("Connected to RabbitMQ at "+ipRabbitMQ+":5672");
     }
 
     public static void connectToSpread(String myIp, int myPort, String ipSpread) throws SpreadException {
         spreadManager = new SpreadGroupManager(SpreadUser, ipSpread, 4803);
-        spreadManager.JoinToGroup(SpreadGroup);
-        spreadManager.SendMessage(SpreadGroup, "New. Address: "+myIp+":"+myPort);
-        System.out.println("SvcServer send Message to Group");
+        spreadManager.joinToGroup(SpreadGroup);
+        spreadManager.sendMessage(SpreadGroup, new SpreadGroupMessage(myIp, myPort));
+
+        if (SvcServer.debugMode)
+            System.out.println("Sent Message to Group");
     }
 
 }

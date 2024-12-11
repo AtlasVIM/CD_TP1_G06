@@ -1,11 +1,14 @@
 package svcserver;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import spread.SpreadConnection;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +18,7 @@ public class SpreadGroupManager {
 
     private SpreadConnection connection;
     private final Map<String, SpreadGroup> groupsBelonging = new HashMap<String,SpreadGroup>();
+    public static List<Server> servers;
 
     public List<String> getNamesOfBelongingGroups()  {
         List<String> groupNames = new ArrayList<String>();
@@ -23,7 +27,7 @@ public class SpreadGroupManager {
         return groupNames;
     }
 
-    private SpreadMessageHandling msgHandling;
+    private SpreadAdvancedMessageListener msgHandling;
 
     public SpreadGroupManager(String user, String address, int port) {
         // Establish the spread connection.
@@ -31,9 +35,9 @@ public class SpreadGroupManager {
             connection = new SpreadConnection();
             connection.connect(InetAddress.getByName(address), port, user, false, true);
 
-            msgHandling = new SpreadMessageHandling(connection);
+            msgHandling = new SpreadAdvancedMessageListener(connection);
             connection.add(msgHandling);
-            System.out.println("SvcServer connected to Spread at "+address+":"+port);
+            System.out.println("Connected to Spread at "+address+":"+port);
 
             //advancedMsgHandling=new AdvancedMessageHandling(connection); connection.add(advancedMsgHandling);
         }
@@ -48,18 +52,31 @@ public class SpreadGroupManager {
         }
     }
 
-    public void JoinToGroup(String groupName) throws SpreadException {
-        SpreadGroup newGroup=new SpreadGroup();
+    public void joinToGroup(String groupName) throws SpreadException {
+        SpreadGroup newGroup = new SpreadGroup();
         newGroup.join(connection, groupName);
         groupsBelonging.put(groupName,newGroup);
     }
 
-    public void SendMessage(String groupToSend, String txtMessage) throws SpreadException {
+    public void sendMessage(String groupToSend, SpreadGroupMessage grpMessage) throws SpreadException {
         SpreadMessage msg = new SpreadMessage();
         msg.setSafe();
         msg.addGroup(groupToSend);
-        msg.setData(txtMessage.getBytes());
+        msg.setData(convertSpreadGroupMessageToBytes(grpMessage));
         connection.multicast(msg);
+    }
+
+    //Serialize object SpreadGroupMessage into byte[]
+    private byte[] convertSpreadGroupMessageToBytes(SpreadGroupMessage grpMessage){
+        Gson gson = new GsonBuilder().create();
+        String base64Img = gson.toJson(grpMessage);
+        return base64Img.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private SpreadGroupMessage convertBytesToSpreadGroupMessage(byte[] grpMessage){
+        Gson gson = new GsonBuilder().create();
+        String newJsonString = new String(grpMessage, StandardCharsets.UTF_8);
+        return gson.fromJson(newJsonString, SpreadGroupMessage.class);
     }
 
     public void groupLeave(String nameToLeave) throws SpreadException {

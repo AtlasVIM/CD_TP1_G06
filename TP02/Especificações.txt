@@ -52,24 +52,24 @@ Objetivos da aula de 3h 03/12
 
 
 
-Definir protocolo de mensagem entre os spreads...
-Como copiar 2 ficheiros bloco a bloco no java
-
-
 FEITO:
 1 - Projeto de Contrato GRPC Entre Client e Register - ok
 2 - Projeto de Contrato GRPC entre Client e Svc - ok
 7 - Instalar o gluster
 9 - Instalar e configurar Spread
+Gluster
+	Configurado e funcionando nos 3 servers
+SvcServer
+	Criar uma lista atualizada de servidores. Feito
+	Criar uma lista atualizada de pedidos request de processamento de fotos. Feito
+	Enviar foto via metodo download em blocos, caso ainda nao esteja processada, enviar msg. Feito
 
 ----------------------------
 DIA 08/12 - Proximas Tarefas.
 
 1- SvcServer - 
 	Implementar Algoritmo de Eleição Bully.
-	Criar uma lista atualizada de servidores
-	Criar uma lista atualizada de pedidos request de processamento de fotos.
-	Enviar foto via metodo download em blocos, caso ainda nao esteja processada, enviar msg.	
+
 2 - Register.
 	Entrar no grupo do spread.
 	Ao entrar novo servidor no grupo ou sair, atualizar lista.

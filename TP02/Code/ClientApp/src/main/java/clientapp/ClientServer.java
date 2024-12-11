@@ -57,7 +57,7 @@ public class ClientServer {
                         System.exit(0);
                         break;
                     case 1:
-                        Upload();
+                        upload();
                         break;
                     case 2:
                         download();
@@ -74,7 +74,7 @@ public class ClientServer {
 
     }
 
-    private static void Upload() throws FileNotFoundException {
+    private static void upload() throws FileNotFoundException {
 
         System.out.println("Type image path: ");
         Scanner pathScanner = new Scanner(System.in);
@@ -85,7 +85,7 @@ public class ClientServer {
         String[] marks = phrase.split(" ");
 
         var id = UUID.randomUUID().toString();
-        var imageModelBytes = BuildImageModelInBytes(id, imgPath, marks);
+        var imageModelBytes = buildImageModelInBytes(id, imgPath, marks);
 
         StreamObserver<UploadRequest> req = svcStub.upload(new StreamObserver<UploadResponse>() {
             @Override
@@ -113,7 +113,7 @@ public class ClientServer {
 
         while (chunkIndex * chunkSize < imageModelBytes.length) {
 
-            UploadRequest uploadRequest = CreateUploadRequestWithChunk(imageModelBytes, chunkIndex++,
+            UploadRequest uploadRequest = createUploadRequestWithChunk(imageModelBytes, chunkIndex++,
                     chunkSize, id, totalChunks);
 
             req.onNext(uploadRequest);
@@ -122,7 +122,7 @@ public class ClientServer {
         System.out.println("Upload Image has been complete. Waiting Request Id...");
     }
 
-    private static UploadRequest CreateUploadRequestWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
+    private static UploadRequest createUploadRequestWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
                                                      String id, int totalChunks){
         int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
         byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
@@ -212,7 +212,7 @@ public class ClientServer {
 
     }
 
-    private static byte[] BuildImageModelInBytes(String id, String imagePath, String[] marks) throws FileNotFoundException{
+    private static byte[] buildImageModelInBytes(String id, String imagePath, String[] marks) throws FileNotFoundException{
         Gson gson = new GsonBuilder().create();
         File img = new File(imagePath);
 

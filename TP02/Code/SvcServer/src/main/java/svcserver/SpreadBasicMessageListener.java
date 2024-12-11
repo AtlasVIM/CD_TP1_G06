@@ -5,10 +5,10 @@ import spread.SpreadConnection;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
-public class SpreadMessageHandling implements BasicMessageListener {
+public class SpreadBasicMessageListener implements BasicMessageListener {
     private final SpreadConnection connection;
 
-    public SpreadMessageHandling(SpreadConnection connection) {
+    public SpreadBasicMessageListener(SpreadConnection connection) {
         this.connection = connection;
     }
 
@@ -16,9 +16,15 @@ public class SpreadMessageHandling implements BasicMessageListener {
     public void messageReceived(SpreadMessage spreadMessage) {
         try {
 
-            System.out.println("Message Received ThreadID="+Thread.currentThread().getId()+":");
+            if (SvcServer.debugMode)
+                System.out.println("Message Received ThreadID="+Thread.currentThread().getId()+":");
+
+
+
+
 
             SpreadPrintMessages.MessageDetails(spreadMessage);
+
             // enviar reply direto para o sender se a mensagem tiver conteudo "request"
             if (!spreadMessage.isMembership()) {
                 SpreadGroup myPrivateGroup = connection.getPrivateGroup();
