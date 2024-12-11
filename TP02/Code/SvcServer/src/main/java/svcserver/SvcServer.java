@@ -9,6 +9,8 @@ import org.slf4j.simple.SimpleLoggerFactory;
 import spread.SpreadException;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 
@@ -18,6 +20,7 @@ public class SvcServer {
     public static String SpreadUser = "Servers";
     public static String SpreadGroup = "Servers";
     static Logger logger = new SimpleLoggerFactory().getLogger("RabbitMQ-configurator");
+    public static boolean debugMode = true;
 
     public static void main(String[] args){
 

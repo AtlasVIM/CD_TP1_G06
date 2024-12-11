@@ -149,8 +149,6 @@ public class ClientServer {
                 .setIdRequest(requestId)
                 .build();
 
-
-
         StreamObserver<DownloadResponse> res = new StreamObserver<>() {
             FileOutputStream fileOutputStream;
             BufferedOutputStream bufferedOutputStream;

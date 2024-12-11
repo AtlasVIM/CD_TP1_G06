@@ -5,14 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import svcclientstubs.*;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeoutException;
 
 public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase {
-    public ByteArrayOutputStream someClass = new ByteArrayOutputStream(); //TODO nome temporario
 
     @Override
     public StreamObserver<UploadRequest> upload(StreamObserver<UploadResponse> responseObserver) {
@@ -21,12 +19,25 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
         return new StreamObserver<UploadRequest>() {
             @Override
             public void onNext(UploadRequest uploadRequest) {
-                //System.out.println("SvcServer receive call next");
+
+                var idRequest = uploadRequest.getId();
+                if (!ProcessManager.processExists(idRequest)){
+                    ProcessManager.addNewProcess(idRequest, uploadRequest.getTotalChunks());
+                }
 
                 byte[] chunk = uploadRequest.getUploadObject().toByteArray();
                 try {
-                    someClass.write(chunk);
-                    //System.out.println("Bloco do Id: " + uploadRequest.getId() + ", " + uploadRequest.getChunkIndex() + " de " + uploadRequest.getTotalChunks() + " recebido.");
+
+                    var process = ProcessManager.getProcess(idRequest);
+                    assert process != null; //verifica objeto, se nulo dispara erro
+                    var uploadRequestObject = process.getUploadRequestObject();
+                    uploadRequestObject.write(chunk);
+
+                    ProcessManager.setUploadRequestObject(idRequest, uploadRequestObject);
+                    ProcessManager.setChunks(idRequest, uploadRequest.getChunkIndex()+1);
+
+                    if (SvcServer.debugMode)
+                        System.out.println("Request Id: " + uploadRequest.getId() + ", " + uploadRequest.getChunkIndex() + " of " + uploadRequest.getTotalChunks() + " received.");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -39,22 +50,29 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
 
             @Override
             public void onCompleted() {
-                //System.out.println("Upload completo!");
-                byte[] binData = someClass.toByteArray();
+                if (SvcServer.debugMode)
+                    System.out.println("An Upload process has been completed! Beginning ");
+
+                var process = ProcessManager.getProcessComplete(); //Retorna processo completo e que esta com o status inicial de RECEIVING
+                assert process != null; //verifica objeto, se nulo dispara erro
+
+                ProcessManager.setStatusUploadCompleted(process.getId()); //seta status UPLOAD_COMPLETED para evitar ser processado em outro Svc
+
+                byte[] binData = process.getUploadRequestObject().toByteArray();
 
                 // Desserializando o JSON para um objeto
                 Gson js = new GsonBuilder().create();
                 String newJsonString = new String(binData, StandardCharsets.UTF_8);
                 ImageModel imageModel = js.fromJson(newJsonString, ImageModel.class);
 
-                //System.out.println(imageModel.getId());
+                ProcessManager.setImageName(process.getId(), imageModel.getImageName()); //Seta o nome da Imagem na lista de Processos
 
                 byte[] imageBytes = Base64.getDecoder().decode(imageModel.getImage());
                 String destinoGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
 
                 try (FileOutputStream fos = new FileOutputStream(destinoGlusterFS)) {
                     fos.write(imageBytes);
-                    System.out.println("Svc Image saved successfully: "+imageModel.getId()+", "+imageModel.getImageName());
+                    System.out.println("Image saved successfully: "+imageModel.getId()+", "+imageModel.getImageName());
 
                     UploadResponse resp = UploadResponse.newBuilder()
                                         .setIdRequest(imageModel.getId())
@@ -75,40 +93,57 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
     public void download(DownloadRequest request, StreamObserver<DownloadResponse> responseObserver) {
         var idRequest = request.getIdRequest();
 
-        //TODO buscar nome imagem lista processos
-        //TODO verificar se processo foi finalizado
-
-        String sourceGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
-        byte[] imageModelBytes = new byte[0];
-        try {
-            imageModelBytes = BuildImageModelInBytesWithImage(sourceGlusterFS);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        var process = ProcessManager.getProcess(idRequest);
+        if (process == null){
             DownloadResponse responseError = DownloadResponse.newBuilder()
                     .setProcessCompleted(false)
-                    .setMessage("An unexpected error occurred")
+                    .setMessage("Sorry! We couldn't find the process with Request Id: "+idRequest+". Please check and try again.")
                     .build();
             responseObserver.onNext(responseError);
             responseObserver.onCompleted();
         }
-
-        int chunkSize = 1024; // Tamanho do bloco
-        int totalChunks = (int) Math.ceil((double) imageModelBytes.length / chunkSize);
-        int chunkIndex = 0;
-
-        while (chunkIndex * chunkSize < imageModelBytes.length) {
-
-            DownloadResponse response = CreateDownloadResponseWithChunk(imageModelBytes, chunkIndex++,
-                    chunkSize, totalChunks);
-
-            responseObserver.onNext(response);
+        else if (process.getStatus() != ProcessStatus.PROCESSED){ //Imagem ainda esta sendo processada
+            DownloadResponse responseError = DownloadResponse.newBuilder()
+                    .setProcessCompleted(false)
+                    .setMessage("Sorry! We are still processing your request. Please try again later.")
+                    .build();
+            responseObserver.onNext(responseError);
+            responseObserver.onCompleted();
         }
+        else {
 
-        responseObserver.onCompleted();
-        System.out.println("Download Image has been complete.. Request id: "+idRequest);
+            String sourceGlusterFS = "/var/sharedfiles/" + process.getImageNameMarks();
+            byte[] imageModelBytes = new byte[0];
+            try {
+                imageModelBytes = BuildImageModelInBytesWithImage(sourceGlusterFS);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                DownloadResponse responseError = DownloadResponse.newBuilder()
+                        .setProcessCompleted(false)
+                        .setMessage("Sorry! An unexpected error occurred")
+                        .build();
+                responseObserver.onNext(responseError);
+                responseObserver.onCompleted();
+            }
+
+            int chunkSize = 1024; // Tamanho do bloco
+            int totalChunks = (int) Math.ceil((double) imageModelBytes.length / chunkSize);
+            int chunkIndex = 0;
+
+            while (chunkIndex * chunkSize < imageModelBytes.length) {
+
+                DownloadResponse response = CreateDownloadResponseWithChunk(imageModelBytes, chunkIndex++,
+                        chunkSize, totalChunks);
+
+                responseObserver.onNext(response);
+            }
+
+            responseObserver.onCompleted();
+            System.out.println("Download Image has been completed.. Request id: " + idRequest);
+        }
     }
 
-    private static DownloadResponse CreateDownloadResponseWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
+    private DownloadResponse CreateDownloadResponseWithChunk(byte[] imageModelBytes, int chunkIndex, int chunkSize,
                                                               int totalChunks){
         int endIndex = Math.min((chunkIndex + 1) * chunkSize, imageModelBytes.length);
         byte[] chunk = new byte[endIndex - chunkIndex * chunkSize];
@@ -128,7 +163,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
         System.out.println("Svc Message Sent to RabbitMQ:" + message);
     }
 
-    private static byte[] BuildImageModelInBytesWithImage(String imagePath) throws FileNotFoundException {
+    private byte[] BuildImageModelInBytesWithImage(String imagePath) throws FileNotFoundException {
         Gson gson = new GsonBuilder().create();
         File img = new File(imagePath);
 
@@ -150,5 +185,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
         String base64Img = gson.toJson(imgObj);
         return base64Img.getBytes(StandardCharsets.UTF_8);
     }
+
+
 
 }

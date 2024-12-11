@@ -7,6 +7,7 @@ public class ImageModel {
     private String imageName;
     private String image;
     private String[] marks;
+    private String message;
 
     public ImageModel() {
     }
