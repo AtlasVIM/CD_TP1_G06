@@ -157,25 +157,28 @@ public class ClientServer {
             public void onNext(DownloadResponse downloadResponse) {
 
                 try {
-                    System.out.println("DOWNLOADING IMAGE ");
-                    Gson gson = new Gson();
-                    byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
-                    String jsonString = new String(byteArr, StandardCharsets.UTF_8);
-                    ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
+                    if (downloadResponse.getProcessCompleted()) {
+                        System.out.println("DOWNLOADING IMAGE ");
+                        Gson gson = new Gson();
+                        byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
+                        String jsonString = new String(byteArr, StandardCharsets.UTF_8);
+                        ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
 
-                    if (fileOutputStream == null && bufferedOutputStream == null) {
+                        if (fileOutputStream == null && bufferedOutputStream == null) {
 
-                        File downloadedImage = new File(path, downloadedImageObj.getImageName());
+                            File downloadedImage = new File(path, downloadedImageObj.getImageName());
 
-                        fileOutputStream = new FileOutputStream(downloadedImage, true);
-                        bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+                            fileOutputStream = new FileOutputStream(downloadedImage, true);
+                            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
+                        }
+                        byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
+
+                        bufferedOutputStream.write(imgData);
+                        bufferedOutputStream.flush();
+                    } else {
+                        System.out.println(downloadResponse.getMessage());
                     }
-                    byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
-
-                    bufferedOutputStream.write(imgData);
-                    bufferedOutputStream.flush();
-
 
                 } catch (Exception e) {
                         e.printStackTrace();
@@ -186,8 +189,10 @@ public class ClientServer {
             public void onError(Throwable throwable) {
                 System.out.println("DOWNLOAD ERROR: " + throwable.getMessage());
                 try {
+                    if (bufferedOutputStream != null && fileOutputStream != null) {
                     bufferedOutputStream.close();
                     fileOutputStream.close();
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -197,8 +202,10 @@ public class ClientServer {
             public void onCompleted() {
                 System.out.println("DOWNLOAD COMPLETED");
                 try {
-                    bufferedOutputStream.close();
-                    fileOutputStream.close();
+                    if (bufferedOutputStream != null && fileOutputStream != null) {
+                        bufferedOutputStream.close();
+                        fileOutputStream.close();
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
