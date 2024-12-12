@@ -15,6 +15,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class ClientServer {
+    private static boolean debugMode = true;
     private static String managerIP;
     private static int managerPort;
 
@@ -88,10 +89,14 @@ public class ClientServer {
         var imageModelBytes = buildImageModelInBytes(id, imgPath, marks);
 
         StreamObserver<UploadRequest> req = svcStub.upload(new StreamObserver<UploadResponse>() {
+            boolean idGiven = false;
             @Override
             public void onNext(UploadResponse uploadResponse) {
                 System.out.println(" ");
+                if(!idGiven) {
                 System.out.println("We have successfully received your image and it will be processed. Please keep your Request Id: " + uploadResponse.getIdRequest());
+                idGiven = true;
+                }
             }
 
             @Override
@@ -101,7 +106,7 @@ public class ClientServer {
 
             @Override
             public void onCompleted() {
-                System.out.println("Upload process has been completed");
+                System.out.println("Upload process has been completed. Here is your image's ID for downloading - ");
             }
         });
 
@@ -148,7 +153,6 @@ public class ClientServer {
                 .newBuilder()
                 .setIdRequest(requestId)
                 .build();
-
         StreamObserver<DownloadResponse> res = new StreamObserver<>() {
             FileOutputStream fileOutputStream;
             BufferedOutputStream bufferedOutputStream;
@@ -158,11 +162,20 @@ public class ClientServer {
 
                 try {
                     if (downloadResponse.getProcessCompleted()) {
-                        System.out.println("DOWNLOADING IMAGE ");
                         Gson gson = new Gson();
                         byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
                         String jsonString = new String(byteArr, StandardCharsets.UTF_8);
                         ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
+                        if (debugMode) {
+                            System.out.println(
+                                    "DOWNLOADING IMAGE "
+                                            + downloadedImageObj.getImageName() + ": "
+                                            + " CHUNK "
+                                            + downloadResponse.getChunkIndex()
+                                            + " OUT OF "
+                                            + downloadResponse.getTotalChunks()
+                            );
+                        }
 
                         if (fileOutputStream == null && bufferedOutputStream == null) {
 
@@ -248,7 +261,6 @@ public class ClientServer {
         if (svcChannel != null && !svcChannel.isShutdown()) {
             System.out.println(" SHUTTING DOWN CONNECTION WITH SVC SERVER");
             svcChannel.shutdownNow();
-            System.out.println("CONNECTING TO NEW SERVER");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
 
 
@@ -257,12 +269,11 @@ public class ClientServer {
                     .usePlaintext()
                     .build();
 
-            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            System.out.println("Connected to new SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
         } else if (svcChannel == null) {
-            System.out.println("CONNECTING TO NEW SERVER");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
 
 
@@ -271,7 +282,7 @@ public class ClientServer {
                     .usePlaintext()
                     .build();
 
-            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            System.out.println("Connected to new SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
