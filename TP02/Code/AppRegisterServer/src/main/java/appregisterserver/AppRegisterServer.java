@@ -4,7 +4,6 @@ import io.grpc.ServerBuilder;
 import spread.SpreadException;
 
 public class AppRegisterServer {
-    //public static SharedServerList sharedServerList;
 
     public static String myIp;
     public final static boolean debugMode = true;
@@ -22,10 +21,11 @@ public class AppRegisterServer {
             }
 
 
+            ServerManager serverManager = new ServerManager();
 
             io.grpc.Server svc = ServerBuilder
                     .forPort(port)
-                    .addService(new ClientService())
+                    .addService(new ClientService(serverManager))
                     .build();
 
             svc.start();
