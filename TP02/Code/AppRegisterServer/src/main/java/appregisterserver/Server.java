@@ -3,6 +3,8 @@ package appregisterserver;
 public class Server {
     private String ip;
     private int port;
+    private long groupMemberId;
+    private boolean isGroupLeader;
     private int connectedClients;
 
     public Server(String ip, int port) {
@@ -43,6 +45,14 @@ public class Server {
         if (this.connectedClients > 0) {
             this.connectedClients--;
         }
+    }
+
+    public long getGroupMemberId() {
+        return groupMemberId;
+    }
+
+    public void setGroupMemberId(long groupMemberId) {
+        this.groupMemberId = groupMemberId;
     }
 
     @Override

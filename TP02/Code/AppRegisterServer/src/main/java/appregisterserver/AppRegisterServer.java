@@ -1,16 +1,27 @@
 package appregisterserver;
 
 import io.grpc.ServerBuilder;
+import spread.SpreadException;
 
 public class AppRegisterServer {
-    //private SharedServerList sharedServerList;
+    //public static SharedServerList sharedServerList;
+
+    public static String myIp;
+    public final static boolean debugMode = true;
+    public static SpreadGroupManager spreadManager;
+    public final static String SpreadUser = "Servers";
+    public final static String SpreadGroup = "Servers";
 
     public static void main(String[] args) {
         try {
             int port = 50051;
-            if (args.length == 1) {
+            String spreadIp = "34.78.207.63";
+            if (args.length > 1) {
                 port = Integer.parseInt(args[0]);
+                spreadIp = args[2];
             }
+
+
 
             io.grpc.Server svc = ServerBuilder
                     .forPort(port)
@@ -18,8 +29,12 @@ public class AppRegisterServer {
                     .build();
 
             svc.start();
-            System.out.println(String.format("RegisterServer: %s started. Listening on Port: %s ", port));
+            System.out.println(String.format("RegisterServer: %s started. Listening on Port: %s ",myIp, port));
 
+            connectToSpread(myIp, port, spreadIp);
+            if(debugMode) {
+                System.out.println("CONNECTED TO SPREAD GROUP");
+            }
             svc.awaitTermination();
             svc.shutdown();
 
@@ -28,5 +43,13 @@ public class AppRegisterServer {
         }
     }
 
+    public static void connectToSpread(String myIp, int myPort, String ipSpread) throws SpreadException {
+        spreadManager = new SpreadGroupManager(SpreadUser, ipSpread, 4803);
+        spreadManager.joinToGroup(SpreadGroup);
+        spreadManager.sendMessage(SpreadGroup, new SpreadGroupMessage(myIp, myPort));
+
+        if (AppRegisterServer.debugMode)
+            System.out.println("Sent Message to Group");
+    }
 
 }

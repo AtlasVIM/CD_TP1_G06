@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import registerclientstubs.RegisterClientServiceGrpc;
 import registerclientstubs.SvcServerAddress;
 import registerclientstubs.VoidRequest;
+import spread.SpreadGroup;
 
 public class ClientService extends RegisterClientServiceGrpc.RegisterClientServiceImplBase {
 
