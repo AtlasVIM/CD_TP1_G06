@@ -89,14 +89,10 @@ public class ClientServer {
         var imageModelBytes = buildImageModelInBytes(id, imgPath, marks);
 
         StreamObserver<UploadRequest> req = svcStub.upload(new StreamObserver<UploadResponse>() {
-            boolean idGiven = false;
             @Override
             public void onNext(UploadResponse uploadResponse) {
                 System.out.println(" ");
-                if(!idGiven) {
                 System.out.println("We have successfully received your image and it will be processed. Please keep your Request Id: " + uploadResponse.getIdRequest());
-                idGiven = true;
-                }
             }
 
             @Override
@@ -106,7 +102,6 @@ public class ClientServer {
 
             @Override
             public void onCompleted() {
-                System.out.println("Upload process has been completed. Here is your image's ID for downloading - ");
             }
         });
 
