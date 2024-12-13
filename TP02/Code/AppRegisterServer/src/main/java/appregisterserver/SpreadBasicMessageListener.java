@@ -37,7 +37,7 @@ public class SpreadBasicMessageListener implements BasicMessageListener {
                         SpreadMessage msg = new SpreadMessage();
                         msg.setSafe();
                         msg.addGroup(senderPrivateGroup.toString());
-                        msg.setData(("Hello i am " + myPrivateGroup + ":I was received your group request").getBytes());
+                        msg.setData(("Hello i am " + myPrivateGroup + ":I have received your group request").getBytes());
                         //System.out.println("enviar reply direto");
                         connection.multicast(msg);
                     }

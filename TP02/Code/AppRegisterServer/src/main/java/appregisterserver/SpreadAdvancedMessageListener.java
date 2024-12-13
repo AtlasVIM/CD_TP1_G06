@@ -20,7 +20,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
 
         MembershipInfo memberships = spreadMessage.getMembershipInfo();
 
-        if (memberships.isSelfLeave()) {
+        if (memberships.isSelfLeave() || memberships.isCausedByDisconnect() || memberships.isCausedByLeave()) {
             System.out.println("Left group:" + memberships.getGroup().toString());
         } else {
             SpreadGroup[] members = memberships.getMembers();

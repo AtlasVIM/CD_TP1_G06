@@ -48,16 +48,6 @@ public class ProcessManager {
         });
     }
 
-    public static Process getProcessComplete(){
-        Iterator<Process> iterator = processes.values().iterator();
-        while (iterator.hasNext()) {
-            Process process = iterator.next();
-            if (process.getChunkIndex() == process.getTotalChunks() && process.getStatus() == ProcessStatus.RECEIVING) {
-                return process;
-            }
-        }
-        return null; // Nenhum processo completo encontrado
-    }
 
     public static void setStatusUploadCompleted(String id){
         executor.submit(() -> {
