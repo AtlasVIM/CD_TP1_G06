@@ -6,7 +6,7 @@ public class Process {
     private String id;
     private String imageName;
     private String imageNameMarks;
-    private ByteArrayOutputStream uploadRequestObject;
+    private transient ByteArrayOutputStream uploadRequestObject; //tansient ignorar serializacao para o gson
     private ProcessStatus status;
     private int chunkIndex;
     private int totalChunks;

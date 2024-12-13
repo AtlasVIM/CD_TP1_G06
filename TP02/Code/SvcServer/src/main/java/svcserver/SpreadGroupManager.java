@@ -17,32 +17,25 @@ import java.util.Map;
 public class SpreadGroupManager {
 
     private SpreadConnection connection;
-    private final Map<String, SpreadGroup> groupsBelonging = new HashMap<String,SpreadGroup>();
     public static List<Server> servers;
 
-    public List<String> getNamesOfBelongingGroups()  {
-        List<String> groupNames = new ArrayList<String>();
-        for (String gn : groupsBelonging.keySet() )
-            groupNames.add(gn);
-        return groupNames;
-    }
+    private SpreadAdvancedMessageListener msgHandlingAdvanced;
+    private SpreadBasicMessageListener msgHandlingBasic;
 
-    private SpreadAdvancedMessageListener msgHandling;
-
-    public SpreadGroupManager(String user, String address, int port) {
+    public SpreadGroupManager(String memberName, String address, int port) {
         // Establish the spread connection.
         try  {
             connection = new SpreadConnection();
-            connection.connect(InetAddress.getByName(address), port, user, false, true);
+            connection.connect(InetAddress.getByName(address), port, memberName, false, true);
 
-            msgHandling = new SpreadAdvancedMessageListener(connection);
-            connection.add(msgHandling);
+            msgHandlingAdvanced = new SpreadAdvancedMessageListener(connection);
+            msgHandlingBasic = new SpreadBasicMessageListener(connection);
+            connection.add(msgHandlingAdvanced);
+            //connection.add(msgHandlingBasic);
             System.out.println("Connected to Spread at "+address+":"+port);
-
-            //advancedMsgHandling=new AdvancedMessageHandling(connection); connection.add(advancedMsgHandling);
         }
         catch(SpreadException e)  {
-            System.err.println("There was an error connecting to the daemon.");
+            System.err.println("There was an error connecting to the daemon Spread.");
             e.printStackTrace();
             System.exit(1);
         }
@@ -55,13 +48,12 @@ public class SpreadGroupManager {
     public void joinToGroup(String groupName) throws SpreadException {
         SpreadGroup newGroup = new SpreadGroup();
         newGroup.join(connection, groupName);
-        groupsBelonging.put(groupName,newGroup);
     }
 
-    public void sendMessage(String groupToSend, SpreadGroupMessage grpMessage) throws SpreadException {
+    public void sendMessage(SpreadGroupMessage grpMessage) throws SpreadException {
         SpreadMessage msg = new SpreadMessage();
         msg.setSafe();
-        msg.addGroup(groupToSend);
+        msg.addGroup(SvcServer.SpreadGroup);
         msg.setData(convertSpreadGroupMessageToBytes(grpMessage));
         connection.multicast(msg);
     }
@@ -69,29 +61,29 @@ public class SpreadGroupManager {
     //Serialize object SpreadGroupMessage into byte[]
     private byte[] convertSpreadGroupMessageToBytes(SpreadGroupMessage grpMessage){
         Gson gson = new GsonBuilder().create();
-        String base64Img = gson.toJson(grpMessage);
-        return base64Img.getBytes(StandardCharsets.UTF_8);
+        String newJsonString = gson.toJson(grpMessage);
+        return newJsonString.getBytes(StandardCharsets.UTF_8);
     }
 
-    private SpreadGroupMessage convertBytesToSpreadGroupMessage(byte[] grpMessage){
+    public SpreadGroupMessage convertBytesToSpreadGroupMessage(byte[] grpMessage){
         Gson gson = new GsonBuilder().create();
         String newJsonString = new String(grpMessage, StandardCharsets.UTF_8);
         return gson.fromJson(newJsonString, SpreadGroupMessage.class);
     }
 
     public void groupLeave(String nameToLeave) throws SpreadException {
-        SpreadGroup group=groupsBelonging.get(nameToLeave);
+        /*SpreadGroup group=groupsBelonging.get(nameToLeave);
         if(group != null) {
             group.leave();
             groupsBelonging.remove(nameToLeave);
             System.out.println("Left from " + group + ".");
-        } else  { System.out.println("No group to leave."); }
+        } else  { System.out.println("No group to leave."); }*/
     }
 
     public void close() throws SpreadException {
         // remove listener
-        connection.remove(msgHandling);
-        //connection.remove(advancedMsgHandling);
+        connection.remove(msgHandlingAdvanced);
+        connection.remove(msgHandlingBasic);
         // Disconnect.
         connection.disconnect();
     }

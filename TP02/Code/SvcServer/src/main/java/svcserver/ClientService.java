@@ -21,26 +21,15 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
             public void onNext(UploadRequest uploadRequest) {
 
                 var idRequest = uploadRequest.getId();
-                if (!ProcessManager.processExists(idRequest)){
-                    ProcessManager.addNewProcess(idRequest, uploadRequest.getTotalChunks());
-                }
+                ProcessManager.addNewProcess(idRequest, uploadRequest.getTotalChunks()); //Adiciona a lista somente se nao existir
 
                 byte[] chunk = uploadRequest.getUploadObject().toByteArray();
-                try {
 
-                    var process = ProcessManager.getProcess(idRequest);
-                    assert process != null; //verifica objeto, se nulo dispara erro
-                    var uploadRequestObject = process.getUploadRequestObject();
-                    uploadRequestObject.write(chunk);
+                ProcessManager.setChunkUploadRequestObject(idRequest, chunk);
+                ProcessManager.setChunks(idRequest, uploadRequest.getChunkIndex()+1);
 
-                    ProcessManager.setUploadRequestObject(idRequest, uploadRequestObject);
-                    ProcessManager.setChunks(idRequest, uploadRequest.getChunkIndex()+1);
-
-                    if (SvcServer.debugMode)
-                        System.out.println("Request Id: " + uploadRequest.getId() + ", " + uploadRequest.getChunkIndex() + " of " + uploadRequest.getTotalChunks() + " received.");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                if (SvcServer.debugMode)
+                    System.out.println("Request Id: " + uploadRequest.getId() + ", " + uploadRequest.getChunkIndex() + " of " + uploadRequest.getTotalChunks() + " received.");
             }
 
             @Override
@@ -81,6 +70,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
                     responseObserver.onNext(resp);
                     responseObserver.onCompleted();
                     sendNewMessageToRabbitMQ(imageModel);
+                    //TODO enviar mensagem ao grupo do novo processo
 
                 } catch (Exception e) {
                     e.printStackTrace();

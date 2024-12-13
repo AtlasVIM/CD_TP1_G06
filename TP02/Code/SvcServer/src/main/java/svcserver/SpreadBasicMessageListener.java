@@ -17,11 +17,9 @@ public class SpreadBasicMessageListener implements BasicMessageListener {
         try {
 
             if (SvcServer.debugMode)
-                System.out.println("Message Received ThreadID="+Thread.currentThread().getId()+":");
+                System.out.println("BasicMessageListener Message Received ThreadID="+Thread.currentThread().getId()+":");
 
-
-
-
+            System.out.println("BasicMessageListener messageReceived The message is: " + new String(spreadMessage.getData()));
 
             SpreadPrintMessages.MessageDetails(spreadMessage);
 

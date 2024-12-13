@@ -5,12 +5,12 @@ public class Server {
     private int port;
     private long groupMemberId;
     private boolean isGroupLeader;
-    private int connectedClients;
 
-    public Server(String ip, int port) {
+    public Server(String ip, int port, long groupMemberId) {
         this.ip = ip;
         this.port = port;
-        this.connectedClients = 0;
+        this.groupMemberId = groupMemberId;
+        this.isGroupLeader = false;
     }
 
     public String getIp() {
@@ -29,24 +29,6 @@ public class Server {
         this.port = port;
     }
 
-    public int getConnectedClients() {
-        return connectedClients;
-    }
-
-    public void setConnectedClients(int connectedClients) {
-        this.connectedClients = connectedClients;
-    }
-
-    public void incrementClients() {
-        this.connectedClients++;
-    }
-
-    public void decrementClients() {
-        if (this.connectedClients > 0) {
-            this.connectedClients--;
-        }
-    }
-
     public long getGroupMemberId() {
         return groupMemberId;
     }
@@ -55,12 +37,20 @@ public class Server {
         this.groupMemberId = groupMemberId;
     }
 
+    public boolean isGroupLeader() {
+        return isGroupLeader;
+    }
+
+    public void setGroupLeader(boolean groupLeader) {
+        isGroupLeader = groupLeader;
+    }
+
     @Override
     public String toString() {
         return "Server{" +
                 "ip='" + ip + '\'' +
                 ", port=" + port +
-                ", connectedClients=" + connectedClients +
+                ", groupMemberId=" + groupMemberId +
                 '}';
     }
 }
