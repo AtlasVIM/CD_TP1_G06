@@ -15,6 +15,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 public class ClientServer {
+    private static boolean debugMode = true;
     private static String managerIP;
     private static int managerPort;
 
@@ -101,7 +102,6 @@ public class ClientServer {
 
             @Override
             public void onCompleted() {
-                System.out.println("Upload process has been completed");
             }
         });
 
@@ -148,7 +148,6 @@ public class ClientServer {
                 .newBuilder()
                 .setIdRequest(requestId)
                 .build();
-
         StreamObserver<DownloadResponse> res = new StreamObserver<>() {
             FileOutputStream fileOutputStream;
             BufferedOutputStream bufferedOutputStream;
@@ -157,25 +156,37 @@ public class ClientServer {
             public void onNext(DownloadResponse downloadResponse) {
 
                 try {
-                    System.out.println("DOWNLOADING IMAGE ");
-                    Gson gson = new Gson();
-                    byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
-                    String jsonString = new String(byteArr, StandardCharsets.UTF_8);
-                    ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
+                    if (downloadResponse.getProcessCompleted()) {
+                        Gson gson = new Gson();
+                        byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
+                        String jsonString = new String(byteArr, StandardCharsets.UTF_8);
+                        ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
+                        if (debugMode) {
+                            System.out.println(
+                                    "DOWNLOADING IMAGE "
+                                            + downloadedImageObj.getImageName() + ": "
+                                            + " CHUNK "
+                                            + downloadResponse.getChunkIndex()
+                                            + " OUT OF "
+                                            + downloadResponse.getTotalChunks()
+                            );
+                        }
 
-                    if (fileOutputStream == null && bufferedOutputStream == null) {
+                        if (fileOutputStream == null && bufferedOutputStream == null) {
 
-                        File downloadedImage = new File(path, downloadedImageObj.getImageName());
+                            File downloadedImage = new File(path, downloadedImageObj.getImageName());
 
-                        fileOutputStream = new FileOutputStream(downloadedImage, true);
-                        bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+                            fileOutputStream = new FileOutputStream(downloadedImage, true);
+                            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
+                        }
+                        byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
+
+                        bufferedOutputStream.write(imgData);
+                        bufferedOutputStream.flush();
+                    } else {
+                        System.out.println(downloadResponse.getMessage());
                     }
-                    byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
-
-                    bufferedOutputStream.write(imgData);
-                    bufferedOutputStream.flush();
-
 
                 } catch (Exception e) {
                         e.printStackTrace();
@@ -186,8 +197,10 @@ public class ClientServer {
             public void onError(Throwable throwable) {
                 System.out.println("DOWNLOAD ERROR: " + throwable.getMessage());
                 try {
+                    if (bufferedOutputStream != null && fileOutputStream != null) {
                     bufferedOutputStream.close();
                     fileOutputStream.close();
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -197,8 +210,10 @@ public class ClientServer {
             public void onCompleted() {
                 System.out.println("DOWNLOAD COMPLETED");
                 try {
-                    bufferedOutputStream.close();
-                    fileOutputStream.close();
+                    if (bufferedOutputStream != null && fileOutputStream != null) {
+                        bufferedOutputStream.close();
+                        fileOutputStream.close();
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -241,7 +256,6 @@ public class ClientServer {
         if (svcChannel != null && !svcChannel.isShutdown()) {
             System.out.println(" SHUTTING DOWN CONNECTION WITH SVC SERVER");
             svcChannel.shutdownNow();
-            System.out.println("CONNECTING TO NEW SERVER");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
 
 
@@ -250,12 +264,11 @@ public class ClientServer {
                     .usePlaintext()
                     .build();
 
-            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            System.out.println("Connected to new SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
         } else if (svcChannel == null) {
-            System.out.println("CONNECTING TO NEW SERVER");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
 
 
@@ -264,7 +277,7 @@ public class ClientServer {
                     .usePlaintext()
                     .build();
 
-            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            System.out.println("Connected to new SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);

@@ -39,13 +39,22 @@ public class ImageModel {
         this.image = image;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     @Override
     public String toString() {
         return "Metadata{" +
                 "id='" + id + '\'' +
-                "imageName='" + imageName + '\'' +
+                ", imageName='" + imageName + '\'' +
                 ", marks='" + Arrays.toString(marks) + '\'' +
                 ", image='" + image + '\'' +
+                ", message='" + message + '\'' +
                 '}';
     }
 
