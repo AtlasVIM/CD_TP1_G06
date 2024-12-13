@@ -88,9 +88,9 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
 
     @Override
     public void download(DownloadRequest request, StreamObserver<DownloadResponse> responseObserver) {
-        var idRequest = request.getIdRequest();
+        String idRequest = request.getIdRequest();
 
-        var process = ProcessManager.getProcess(idRequest);
+        Process process = ProcessManager.getProcess(idRequest);
         if (process == null){
             DownloadResponse responseError = DownloadResponse.newBuilder()
                     .setProcessCompleted(false)
