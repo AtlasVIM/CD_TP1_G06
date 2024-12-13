@@ -20,7 +20,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
             @Override
             public void onNext(UploadRequest uploadRequest) {
 
-                var idRequest = uploadRequest.getId();
+                String idRequest = uploadRequest.getId();
                 ProcessManager.addNewProcess(idRequest, uploadRequest.getTotalChunks()); //Adiciona a lista somente se nao existir
 
                 byte[] chunk = uploadRequest.getUploadObject().toByteArray();
@@ -30,6 +30,9 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
 
                 if (SvcServer.debugMode)
                     System.out.println("Request Id: " + uploadRequest.getId() + ", " + uploadRequest.getChunkIndex() + " of " + uploadRequest.getTotalChunks() + " received.");
+                if(uploadRequest.getChunkIndex()+1 == uploadRequest.getTotalChunks()) {
+                    completeUpload(responseObserver, idRequest);
+                }
             }
 
             @Override
@@ -42,41 +45,45 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
                 if (SvcServer.debugMode)
                     System.out.println("An Upload process has been completed! Beginning ");
 
-                var process = ProcessManager.getProcessComplete(); //Retorna processo completo e que esta com o status inicial de RECEIVING
-                assert process != null; //verifica objeto, se nulo dispara erro
-
-                ProcessManager.setStatusUploadCompleted(process.getId()); //seta status UPLOAD_COMPLETED para evitar ser processado em outro Svc
-
-                byte[] binData = process.getUploadRequestObject().toByteArray();
-
-                // Desserializando o JSON para um objeto
-                Gson js = new GsonBuilder().create();
-                String newJsonString = new String(binData, StandardCharsets.UTF_8);
-                ImageModel imageModel = js.fromJson(newJsonString, ImageModel.class);
-
-                ProcessManager.setImageName(process.getId(), imageModel.getImageName()); //Seta o nome da Imagem na lista de Processos
-
-                byte[] imageBytes = Base64.getDecoder().decode(imageModel.getImage());
-                String destinoGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
-
-                try (FileOutputStream fos = new FileOutputStream(destinoGlusterFS)) {
-                    fos.write(imageBytes);
-                    System.out.println("Image saved successfully: "+imageModel.getId()+", "+imageModel.getImageName());
-
-                    UploadResponse resp = UploadResponse.newBuilder()
-                                        .setIdRequest(imageModel.getId())
-                                        .build();
-
-                    responseObserver.onNext(resp);
-                    responseObserver.onCompleted();
-                    sendNewMessageToRabbitMQ(imageModel);
-                    //TODO enviar mensagem ao grupo do novo processo
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         };
+    }
+
+    private void completeUpload(StreamObserver<UploadResponse> responseObserver, String idRequest) {
+
+        Process process = ProcessManager.getProcess(idRequest); //Retorna processo completo e que esta com o status inicial de RECEIVING
+        assert process != null; //verifica objeto, se nulo dispara erro
+
+        ProcessManager.setStatusUploadCompleted(process.getId()); //seta status UPLOAD_COMPLETED para evitar ser processado em outro Svc
+
+        byte[] binData = process.getUploadRequestObject().toByteArray();
+
+        // Desserializando o JSON para um objeto
+        Gson js = new GsonBuilder().create();
+        String newJsonString = new String(binData, StandardCharsets.UTF_8);
+        ImageModel imageModel = js.fromJson(newJsonString, ImageModel.class);
+
+        ProcessManager.setImageName(process.getId(), imageModel.getImageName()); //Seta o nome da Imagem na lista de Processos
+
+        byte[] imageBytes = Base64.getDecoder().decode(imageModel.getImage());
+        String destinoGlusterFS = "/var/sharedfiles/"+imageModel.getImageName();
+
+        try (FileOutputStream fos = new FileOutputStream(destinoGlusterFS)) {
+            fos.write(imageBytes);
+            System.out.println("Image saved successfully: "+imageModel.getId()+", "+imageModel.getImageName());
+
+            UploadResponse resp = UploadResponse.newBuilder()
+                                .setIdRequest(imageModel.getId())
+                                .build();
+
+            responseObserver.onNext(resp);
+            responseObserver.onCompleted();
+            sendNewMessageToRabbitMQ(imageModel);
+            SvcServer.spreadManager.sendMessage(new SpreadGroupMessage(process.getId(), imageModel.getImageName()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

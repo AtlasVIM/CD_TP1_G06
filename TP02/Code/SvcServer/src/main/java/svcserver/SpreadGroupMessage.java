@@ -18,6 +18,10 @@ public class SpreadGroupMessage {
         this.newSvc = new Server(ip, port, groupMemberId);
     }
 
+    public SpreadGroupMessage(String id, String imgName) {
+        this.newProcess = new Process(id, imgName);
+    }
+
     public SpreadTypeServer getTypeServer() {
         return typeServer;
     }

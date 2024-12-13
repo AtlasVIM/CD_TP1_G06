@@ -12,18 +12,23 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     @Override
     public void regularMessageReceived(SpreadMessage spreadMessage) {
         if (AppRegisterServer.debugMode)
-            System.out.println("Regular SpreadMessage Received ThreadID="+Thread.currentThread().getId()+":");
+            System.out.println("Regular SpreadMessage Received ThreadID=" + Thread.currentThread().getId() + ":");
     }
 
     @Override
     public void membershipMessageReceived(SpreadMessage spreadMessage) {
 
-        MembershipInfo member = spreadMessage.getMembershipInfo();
-        member.
-        if (member.isCausedByJoin()){
-            var member2 = spreadMessage.getSender();
+        MembershipInfo memberships = spreadMessage.getMembershipInfo();
 
+        if (memberships.isSelfLeave()) {
+            System.out.println("Left group:" + memberships.getGroup().toString());
+        } else {
+            SpreadGroup[] members = memberships.getMembers();
+            System.out.println("members of belonging group:" + memberships.getGroup().toString());
+            for (int i = 0; i < members.length; ++i) {
+                System.out.print(members[i] + ":");
+            }
+            System.out.println();
         }
-        long leavingMemberId = member.getLeavingMemberId();
     }
 }
