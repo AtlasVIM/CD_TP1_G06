@@ -9,10 +9,6 @@ import spread.SpreadMessage;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class SpreadGroupManager {
 
@@ -57,6 +53,19 @@ public class SpreadGroupManager {
         connection.multicast(msg);
     }
 
+    public void sendMessageAsLeader() {
+        try {
+            var message = new SpreadGroupMessage(true);
+            SvcServer.spreadManager.sendMessage(message);
+            if (SvcServer.debugMode)
+                System.out.println("Message sent to group as Leader. Qty Processes: "+message.processes.size()+ " Qty Servers: "+message.servers.size());
+
+        } catch (SpreadException e) {
+            System.out.println("An unexpected error occurred when sendMessageAsLeader to group");
+            e.printStackTrace();
+        }
+    }
+
     //Serialize object SpreadGroupMessage into byte[]
     private byte[] convertSpreadGroupMessageToBytes(SpreadGroupMessage grpMessage){
         Gson gson = new GsonBuilder().create();
@@ -82,13 +91,8 @@ public class SpreadGroupManager {
             // será escolhido como leader, mas nao tem a lista de servers ou processos atualizada e possivelmente nao receberá este evento de disconnect..
             // será utilizado semaforo para evitar essa situação
             SvcServer.iAmGroupLeader = true;
-            try {
-                ServerManager.setNewLeader(SvcServer.mySpreadId);
-                SvcServer.spreadManager.sendMessage(new SpreadGroupMessage(true));
-            } catch (SpreadException e) {
-                System.out.println("An unexpected error occurred when sendMessage to group as Leader");
-                e.printStackTrace();
-            }
+            ServerManager.setNewLeader(SvcServer.mySpreadId);
+            sendMessageAsLeader();
 
         }
     }

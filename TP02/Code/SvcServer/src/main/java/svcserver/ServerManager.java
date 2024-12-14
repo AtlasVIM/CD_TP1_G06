@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 
 public class ServerManager {
     private static final ConcurrentHashMap<Long, Server> servers = new ConcurrentHashMap<>(); //Gerenciar a concorrencia
-    private static final ExecutorService executor = Executors.newFixedThreadPool(10);
     private static final Semaphore semaphore = new Semaphore(1);
 
     public static Server getServer(long groupMemberId){
@@ -18,15 +15,31 @@ public class ServerManager {
     }
 
     public static void addNewServer(long groupMemberId, Server server){
-        executor.submit(() -> {
-            servers.putIfAbsent(groupMemberId, server);
-        });
+        if (SvcServer.debugMode) {
+            var atuais = getAllServers();
+            System.out.println("ServerManager. Lista atual: " + atuais.size());
+            for (int i = 0; i < atuais.size(); ++i) {
+                System.out.print(atuais.get(i) + "; ");
+            }
+            System.out.println();
+        }
+
+        servers.putIfAbsent(groupMemberId, server);
+
+
+        if (SvcServer.debugMode) {
+            var atuais = getAllServers();
+            System.out.println("ServerManager. New member add: " + groupMemberId + " Qtd servers in list: " + atuais.size());
+
+            for (int i = 0; i < atuais.size(); ++i) {
+                System.out.print(atuais.get(i) + "; ");
+            }
+            System.out.println();
+        }
     }
 
     public static void removeServer(long groupMemberId){
-        executor.submit(() -> {
-            servers.remove(groupMemberId);
-        });
+        servers.remove(groupMemberId);
     }
 
     public static long getNewLeader() throws InterruptedException {
@@ -50,11 +63,9 @@ public class ServerManager {
     }
 
     public static void setNewLeader(long groupMemberId){
-        executor.submit(() -> {
-            servers.computeIfPresent(groupMemberId, (key, server) ->{
-                server.setGroupLeader(true);
-                return server;
-            });
+        servers.computeIfPresent(groupMemberId, (key, server) -> {
+            server.setGroupLeader(true);
+            return server;
         });
     }
 
@@ -62,5 +73,19 @@ public class ServerManager {
         List<Server> serverList = new ArrayList<>();
         serverList.addAll(servers.values());
         return serverList;
+    }
+
+    public static void updateServers(List<Server> newServers){
+        try {
+            semaphore.acquire();
+            for (Server server : newServers) {
+                servers.put(server.getGroupMemberId(), server);
+            }
+        } catch (InterruptedException e) {
+            System.out.println("ServerManager. An unexpected error occur when updateServers");
+            e.printStackTrace();
+        } finally {
+            semaphore.release();
+        }
     }
 }

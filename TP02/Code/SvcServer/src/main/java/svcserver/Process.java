@@ -75,4 +75,13 @@ public class Process {
     public void setImageNameMarks(String imageNameMarks) {
         this.imageNameMarks = imageNameMarks;
     }
+
+    @Override
+    public String toString() {
+        return "Process{" +
+                "id='" + id + '\'' +
+                ", imageName=" + imageName +
+                ", status=" + status +
+                '}';
+    }
 }

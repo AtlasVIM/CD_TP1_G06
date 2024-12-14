@@ -76,7 +76,7 @@ public class SvcServer {
         spreadManager.sendMessage(new SpreadGroupMessage(myIp, myPort, mySpreadId));
 
         if (SvcServer.debugMode)
-            System.out.println("Sent Message to Group");
+            System.out.println("SvcServer connectToSpread. Sent Message to Group");
     }
 
     public static long generateSpreadMemberId() {
@@ -87,7 +87,7 @@ public class SvcServer {
     }
 
     public static long getSpreadMemberId(String str) {
-        Pattern pattern = Pattern.compile("#(\\d+)#Servers#");
+        Pattern pattern = Pattern.compile("#(\\d+)#");
         Matcher matcher = pattern.matcher(str);
         if (matcher.find()) {
             String numberString = matcher.group(1);

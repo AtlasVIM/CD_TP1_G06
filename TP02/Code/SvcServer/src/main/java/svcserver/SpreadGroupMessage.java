@@ -25,6 +25,7 @@ public class SpreadGroupMessage {
     }
 
     public SpreadGroupMessage(String id, String imgName) {
+        this.typeServer = SpreadTypeServer.SVC;
         this.newProcess = new Process(id, imgName);
     }
 

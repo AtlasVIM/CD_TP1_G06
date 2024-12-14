@@ -82,6 +82,7 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
             SvcServer.spreadManager.sendMessage(new SpreadGroupMessage(process.getId(), imageModel.getImageName()));
 
         } catch (Exception e) {
+            System.out.println("An unexpected error occur when handleCompletedUpload");
             e.printStackTrace();
         }
     }
