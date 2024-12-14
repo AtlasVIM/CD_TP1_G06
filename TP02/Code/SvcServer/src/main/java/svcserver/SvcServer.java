@@ -10,9 +10,9 @@ import spread.SpreadException;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class SvcServer {
@@ -23,8 +23,8 @@ public class SvcServer {
     static Logger logger = new SimpleLoggerFactory().getLogger("RabbitMQ-configurator");
     public static String myIp;
     public static int myPort;
-    public static long spreadMemberId;
-    public static boolean spreadGroupLeader = false;
+    public static long mySpreadId;
+    public static boolean iAmGroupLeader = false;
 
     public static void main(String[] args){
 
@@ -70,10 +70,10 @@ public class SvcServer {
     }
 
     public static void connectToSpread(String myIp, int myPort, String ipSpread) throws SpreadException {
-        spreadMemberId = generateSpreadMemberId();
-        spreadManager = new SpreadGroupManager(spreadMemberId+"", ipSpread, 4803);
+        mySpreadId = generateSpreadMemberId();
+        spreadManager = new SpreadGroupManager(mySpreadId+"", ipSpread, 4803);
         spreadManager.joinToGroup(SpreadGroup);
-        spreadManager.sendMessage(new SpreadGroupMessage(myIp, myPort, spreadMemberId));
+        spreadManager.sendMessage(new SpreadGroupMessage(myIp, myPort, mySpreadId));
 
         if (SvcServer.debugMode)
             System.out.println("Sent Message to Group");
@@ -84,6 +84,22 @@ public class SvcServer {
         long min = 1_000_000_000L;  // Mínimo de 10 dígitos
         long max = 9_999_999_999L;  // Máximo de 10 dígitos
         return min + (long)(secureRandom.nextDouble() * (max - min)) & Long.MAX_VALUE; // Gera um número long positivo aleatório
+    }
+
+    public static long getSpreadMemberId(String str) {
+        Pattern pattern = Pattern.compile("#(\\d+)#Servers#");
+        Matcher matcher = pattern.matcher(str);
+        if (matcher.find()) {
+            String numberString = matcher.group(1);
+            try {
+                var spreadMemberId = Long.parseLong(numberString);
+                return spreadMemberId;
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        } else {
+            return 0; // A string não possui o formato esperado
+        }
     }
 
 

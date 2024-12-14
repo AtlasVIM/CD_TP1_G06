@@ -17,7 +17,6 @@ import java.util.Map;
 public class SpreadGroupManager {
 
     private SpreadConnection connection;
-    public static List<Server> servers;
 
     private SpreadAdvancedMessageListener msgHandlingAdvanced;
     private SpreadBasicMessageListener msgHandlingBasic;
@@ -71,13 +70,27 @@ public class SpreadGroupManager {
         return gson.fromJson(newJsonString, SpreadGroupMessage.class);
     }
 
-    public void groupLeave(String nameToLeave) throws SpreadException {
-        /*SpreadGroup group=groupsBelonging.get(nameToLeave);
-        if(group != null) {
-            group.leave();
-            groupsBelonging.remove(nameToLeave);
-            System.out.println("Left from " + group + ".");
-        } else  { System.out.println("No group to leave."); }*/
+    public void handleDisconnectedMember(SpreadGroup member) throws InterruptedException {
+        var spreadMemberId = SvcServer.getSpreadMemberId(member.toString());
+        var server = ServerManager.getServer(spreadMemberId);
+
+        ServerManager.removeServer(spreadMemberId); //Atualiza Lista
+        System.out.println("Member removed from List: "+spreadMemberId);
+
+        if (server.isGroupLeader() && ServerManager.getNewLeader() == SvcServer.mySpreadId){ //Se o server que saiu for um Leader, promove nova eleição
+            //Possivel problema se nesse momento getNewLeader, entrar novo server e este tiver um numero maior,
+            // será escolhido como leader, mas nao tem a lista de servers ou processos atualizada e possivelmente nao receberá este evento de disconnect..
+            // será utilizado semaforo para evitar essa situação
+            SvcServer.iAmGroupLeader = true;
+            try {
+                ServerManager.setNewLeader(SvcServer.mySpreadId);
+                SvcServer.spreadManager.sendMessage(new SpreadGroupMessage(true));
+            } catch (SpreadException e) {
+                System.out.println("An unexpected error occurred when sendMessage to group as Leader");
+                e.printStackTrace();
+            }
+
+        }
     }
 
     public void close() throws SpreadException {

@@ -2,7 +2,9 @@ package svcserver;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,5 +77,11 @@ public class ProcessManager {
                 return process;
             });
         });
+    }
+
+    public static List<Process> getAllProcesses() {
+        List<Process> processList = new ArrayList<>();
+        processList.addAll(processes.values());
+        return processList;
     }
 }

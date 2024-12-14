@@ -6,11 +6,11 @@ public class Server {
     private long groupMemberId;
     private boolean isGroupLeader;
 
-    public Server(String ip, int port, long groupMemberId) {
+    public Server(String ip, int port, long groupMemberId, boolean isGroupLeader) {
         this.ip = ip;
         this.port = port;
         this.groupMemberId = groupMemberId;
-        this.isGroupLeader = false;
+        this.isGroupLeader = isGroupLeader;
     }
 
     public String getIp() {

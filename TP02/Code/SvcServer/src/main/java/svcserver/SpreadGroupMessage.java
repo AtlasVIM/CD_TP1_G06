@@ -15,7 +15,13 @@ public class SpreadGroupMessage {
     //quando for newSvc
     public SpreadGroupMessage(String ip, int port, long groupMemberId) {
         this.typeServer = SpreadTypeServer.SVC;
-        this.newSvc = new Server(ip, port, groupMemberId);
+        this.newSvc = new Server(ip, port, groupMemberId, false);
+    }
+
+    public SpreadGroupMessage(boolean sendMessageAsLeader) {
+        this.typeServer = SpreadTypeServer.LEADER;
+        this.servers = ServerManager.getAllServers();
+        this.processes = ProcessManager.getAllProcesses();
     }
 
     public SpreadTypeServer getTypeServer() {

@@ -3,6 +3,7 @@ package svcserver;
 import spread.*;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     private final SpreadConnection connection;
@@ -18,16 +19,18 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
 
         var message = SvcServer.spreadManager.convertBytesToSpreadGroupMessage(spreadMessage.getData());
         if (message.getTypeServer() == SpreadTypeServer.SVC){
-            //TODO se for do tipo svc e a lista estiver vazia, add e ele é o lider
-            //TODO se a lista tiver apenas 1, add e começa nova eleição
+            if (SvcServer.iAmGroupLeader){
+                if ()
+            }
+
             //TODO recebe novo processo
             //TODO recebe novo svc
             //TODO atualiza lista de processo e servidores se o svc atual for o leader
             //TODO envia lista atualizada a todos.
         }
         else if (message.getTypeServer() == SpreadTypeServer.LEADER){
-            //TODO se receber msg do leader e o id for diferente do atual, quer dizer q o leader mudou, seta variavel para false
-            //TODO se receber msg do leader com o id igual ao svc atual, quer dizer que ganhou a eleição, seta variavel para true
+            //TODO se receber msg do leader e o id for diferente do atual, e a variavel esta como true, quer dizer q o leader mudou, seta variavel para false
+            //TODO se receber msg do leader com o id igual ao svc atual, mas a variavel for false, quer dizer que ganhou a eleição, seta variavel para true
             //TODO atualiza lista local com processos
             //TODO atualiza lista local de servidores
         }
@@ -44,23 +47,69 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     public void membershipMessageReceived(SpreadMessage spreadMessage) {
         //Recebe informações sobre membros que entraram no grupo ou sairam do grupo
 
-        //TODO se o LEADER for desconectado e o id do svc atual for o primeiro da lista, inicia nova eleição
-        //TODO o primeiro da lista comunica a todos o resultado da eleição, manda msg como leader.
         if (SvcServer.debugMode)
             System.out.println("membershipMessageReceived SpreadMessage Received ThreadID="+Thread.currentThread().getId()+":");
 
-        System.out.println("MemberShip ThreadID:" + Thread.currentThread().getId());
         MembershipInfo info = spreadMessage.getMembershipInfo();
         if (info.isSelfLeave()) {
-            System.out.println("Left group:"+info.getGroup().toString());
-        } else {
-            //if (info.getMembers() != null) {
-            SpreadGroup[] members = info.getMembers();
-            System.out.println("members of belonging group:"+info.getGroup().toString());
-            for (int i = 0; i < members.length; ++i) {
-                System.out.print(members[i] + ":");
+            var member = info.getLeft();
+            if (SvcServer.debugMode)
+                System.out.println("Left group:" + info.getGroup().toString()+ " "+member);
+
+            try {
+                SvcServer.spreadManager.handleDisconnectedMember(member);
+            } catch (InterruptedException e) {
+                System.out.println("An unexpected error occurred when handleDisconnectedMember");
+                e.printStackTrace();
             }
-            System.out.println();
+        }
+        else if (info.isCausedByDisconnect() || info.isCausedByLeave()){
+            var member = info.getLeft();
+            var member2 = info.getDisconnected();
+            if (SvcServer.debugMode)
+                System.out.print("Member disconnected" + member);
+
+            try {
+                SvcServer.spreadManager.handleDisconnectedMember(member);
+            } catch (InterruptedException e) {
+                System.out.println("An unexpected error occurred when handleDisconnectedMember");
+                e.printStackTrace();
+            }
+        }
+        /*else if (info.isCausedByLeave()){
+            var member = info.getLeft();
+            if (SvcServer.debugMode)
+                System.out.print("Member isCausedByLeave: " + member);
+
+            try {
+                SvcServer.spreadManager.handleDisconnectedMember(member);
+            } catch (InterruptedException e) {
+                System.out.println("An unexpected error occurred when handleDisconnectedMember");
+                e.printStackTrace();
+            }
+        }*/
+        else {
+            SpreadGroup[] members = info.getMembers();
+
+            if (members.length == 1){//Isso quer dizer que tem apenas 1 Svc, Inicio do processo e esse vai ser o leader
+                ServerManager.addNewServer(SvcServer.mySpreadId,
+                                            new Server(SvcServer.myIp,
+                                                       SvcServer.myPort,
+                                                       SvcServer.mySpreadId,
+                                                    true));
+
+                SvcServer.iAmGroupLeader = true;
+                System.out.println("New Leader: "+SvcServer.mySpreadId);
+                //Não manda mensagem ao grupo de novo leader, porque não tem mais ninguem no grupo. Não é necessario
+            }
+
+            if (SvcServer.debugMode) {
+                System.out.println("Members of group:" + info.getGroup().toString());
+                for (int i = 0; i < members.length; ++i) {
+                    System.out.print(members[i] + "; ");
+                }
+                System.out.println();
+            }
         }
 
 
