@@ -2,6 +2,8 @@ package appregisterserver;
 
 import spread.*;
 
+import java.util.List;
+
 public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     private final SpreadConnection connection;
 
@@ -11,24 +13,27 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
 
     @Override
     public void regularMessageReceived(SpreadMessage spreadMessage) {
-        if (AppRegisterServer.debugMode)
-            System.out.println("Regular SpreadMessage Received ThreadID=" + Thread.currentThread().getId() + ":");
+            // Converte a mensagem recebida para o tipo SpreadGroupMessage
+            var message = AppRegisterServer.spreadManager.convertBytesToSpreadGroupMessage(spreadMessage.getData());
+            // Processa a mensagem dependendo do tipo de servidor (LEADER ou SVC)
+            if (message.getTypeServer() == SpreadTypeServer.LEADER) {
+                // Atualiza a lista de servidores e processos
+                List<Server> servers = message.servers;
+                ServerManager.updateServers(servers);
+
+            } else if (message.getTypeServer() == SpreadTypeServer.SVC) {
+                // A mensagem é do tipo SVC (servidor específico)
+                // Mensagem para adicionar um novo servidor SVC
+                Server newSvc = message.newSvc;
+                System.out.println("New SVCServer connected: " + newSvc);
+            }
     }
+
+
 
     @Override
     public void membershipMessageReceived(SpreadMessage spreadMessage) {
 
-        MembershipInfo memberships = spreadMessage.getMembershipInfo();
-
-        if (memberships.isSelfLeave() || memberships.isCausedByDisconnect() || memberships.isCausedByLeave()) {
-            System.out.println("Left group:" + memberships.getGroup().toString());
-        } else {
-            SpreadGroup[] members = memberships.getMembers();
-            System.out.println("members of belonging group:" + memberships.getGroup().toString());
-            for (int i = 0; i < members.length; ++i) {
-                System.out.print(members[i] + ":");
-            }
-            System.out.println();
-        }
     }
+
 }

@@ -19,16 +19,8 @@ public class SpreadGroupManager {
 
     private SpreadConnection connection;
     private final Map<String, SpreadGroup> groupsBelonging = new HashMap<String,SpreadGroup>();
-    public static List<Server> servers;
 
-    public List<String> getNamesOfBelongingGroups()  {
-        List<String> groupNames = new ArrayList<String>();
-        for (String gn : groupsBelonging.keySet() )
-            groupNames.add(gn);
-        return groupNames;
-    }
-
-    private SpreadAdvancedMessageListener msgHandling;
+    private SpreadAdvancedMessageListener advancedMsgHandling;
 
     public SpreadGroupManager(String user, String address, int port) {
         // Establish the spread connection.
@@ -36,11 +28,10 @@ public class SpreadGroupManager {
             connection = new SpreadConnection();
             connection.connect(InetAddress.getByName(address), port, user, false, true);
 
-            msgHandling = new SpreadAdvancedMessageListener(connection);
-            connection.add(msgHandling);
+            advancedMsgHandling = new SpreadAdvancedMessageListener(connection);
+            connection.add(advancedMsgHandling);
             System.out.println("Connected to Spread at "+address+":"+port);
 
-            //advancedMsgHandling=new AdvancedMessageHandling(connection); connection.add(advancedMsgHandling);
         }
         catch(SpreadException e)  {
             System.err.println("There was an error connecting to the daemon.");
@@ -74,7 +65,7 @@ public class SpreadGroupManager {
         return base64Img.getBytes(StandardCharsets.UTF_8);
     }
 
-    private SpreadGroupMessage convertBytesToSpreadGroupMessage(byte[] grpMessage){
+    public SpreadGroupMessage convertBytesToSpreadGroupMessage(byte[] grpMessage){
         Gson gson = new GsonBuilder().create();
         String newJsonString = new String(grpMessage, StandardCharsets.UTF_8);
         return gson.fromJson(newJsonString, SpreadGroupMessage.class);
@@ -91,8 +82,8 @@ public class SpreadGroupManager {
 
     public void close() throws SpreadException {
         // remove listener
-        connection.remove(msgHandling);
-        //connection.remove(advancedMsgHandling);
+        connection.remove(advancedMsgHandling);
+
         // Disconnect.
         connection.disconnect();
     }

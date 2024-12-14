@@ -11,6 +11,7 @@ public class AppRegisterServer {
     public final static String SpreadUser = "Servers";
     public final static String SpreadGroup = "Servers";
 
+
     public static void main(String[] args) {
         try {
             int port = 50051;
@@ -20,12 +21,9 @@ public class AppRegisterServer {
                 spreadIp = args[2];
             }
 
-
-            ServerManager serverManager = new ServerManager();
-
             io.grpc.Server svc = ServerBuilder
                     .forPort(port)
-                    .addService(new ClientService(serverManager))
+                    .addService(new ClientService())
                     .build();
 
             svc.start();

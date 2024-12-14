@@ -6,10 +6,8 @@ import registerclientstubs.SvcServerAddress;
 import registerclientstubs.VoidRequest;
 
 public class ClientService extends RegisterClientServiceGrpc.RegisterClientServiceImplBase {
-    ServerManager manager;
 
-    public ClientService(ServerManager manager) {
-        this.manager = manager;
+    public ClientService() {
     }
 
     @Override
@@ -17,8 +15,7 @@ public class ClientService extends RegisterClientServiceGrpc.RegisterClientServi
         super.getSvcServer(request, responseObserver);
 
         // Obtém o próximo servidor com a menor contagem de clientes
-        Server server = manager.getServerWithLeastClients();
-
+        Server server = ServerManager.getServerWithLeastClients();
         if (server != null) {
 
             SvcServerAddress svcServer = SvcServerAddress.newBuilder()
