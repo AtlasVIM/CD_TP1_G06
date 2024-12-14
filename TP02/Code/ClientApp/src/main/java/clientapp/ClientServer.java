@@ -16,8 +16,8 @@ import java.util.UUID;
 
 public class ClientServer {
     private static boolean debugMode = true;
-    private static String managerIP;
-    private static int managerPort;
+    private static String registerIP;
+    private static int registerPort;
 
     private static ManagedChannel registerChannel;
     private static ManagedChannel svcChannel;
@@ -27,26 +27,29 @@ public class ClientServer {
 
     public static void main(String[] args) {
         try {
-            managerIP = args[0];
-            managerPort = Integer.parseInt(args[1]);
+            if (args.length == 2) {
+                registerIP = args[0];
+                registerPort = Integer.parseInt(args[1]);
+            }
 
-            registerChannel = ManagedChannelBuilder
-                    .forAddress(managerIP, managerPort)
+            /*registerChannel = ManagedChannelBuilder
+                    .forAddress(registerIP, registerPort)
                     .usePlaintext()
                     .build();
 
 
             registerBlockStub = RegisterClientServiceGrpc.newBlockingStub(registerChannel);
-            System.out.println("Register Server at " + managerIP + ":" + managerPort + " connected");
+            System.out.println("Register Server at " + registerIP + ":" + registerPort + " connected");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
-
+*/
 
             svcChannel = ManagedChannelBuilder
-                    .forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
+                    //.forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
+                    .forAddress("34.140.182.157", 8000)
                     .usePlaintext()
                     .build();
 
-            System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            //System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);
@@ -208,7 +211,7 @@ public class ClientServer {
 
             @Override
             public void onCompleted() {
-                System.out.println("DOWNLOAD COMPLETED");
+                //System.out.println("DOWNLOAD COMPLETED");
                 try {
                     if (bufferedOutputStream != null && fileOutputStream != null) {
                         bufferedOutputStream.close();
@@ -296,7 +299,7 @@ public class ClientServer {
             System.out.println("2 - DOWNLOAD PHOTO");
             System.out.println("3 - REQUEST NEW SVC SERVER");
             num = scan.nextInt();
-        } while (!(num >= 0 && num < 2));
+        } while (!(num >= 0 && num < 4));
         return num;
     }
 

@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class ImageModel {
     private String id;
     private String imageName;
-    private String image;
+    private String image; //gson ignora serialization
     private String[] marks;
     private String message;
 
