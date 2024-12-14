@@ -2,7 +2,7 @@ Preparar maquinas para apresentação
 C:\Downloads\Teste.png
 
 1 - Ligar VM rabbitMQ 
-	$ sudo docker start rabbitmg
+	 sudo docker start rabbitmg
 		Acessar http://34.76.4.1:15672/
 			usuario: guest
 			Senha: guest
@@ -11,19 +11,18 @@ C:\Downloads\Teste.png
 2 - Ligar gluster nas VMs
 
 	gluster para Iniciar
-		$ sudo service glusterd status
-		$ sudo service glusterd start
-		$ ls /var/sharedfiles
+		 sudo service glusterd status
+		 sudo service glusterd start
+		 ls /var/sharedfiles
 		
-10.132.0.16 svc-tap2-01 --Gluster nao esta funcionando
+10.132.0.16 svc-tap2-01 
 10.132.0.19 svc-tpa2-rabbitmq-broker
 10.132.0.20 svc-tpa2-spread
 
 mount | grep glusterfs
 sudo mount -t glusterfs svc-tpa2-rabbitmq-broker:/glustervol /var/sharedfiles
 sudo mount -t glusterfs svc-tpa2-spread:/glustervol /var/sharedfiles
-
-sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles --Não funciona, da erro
+sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles 
 
 ------------------------
 3 - Spread
@@ -34,8 +33,8 @@ sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles --Não funcion
 	DaemonUser = Servers
 	DaemonGroup = Servers
 	
-	Iniciar serviço
- $/usr/local/sbin/spread -c /usr/local/etc/vmsSpread.conf > /tmp/spreadlogs 2>&1 &
+	Iniciar serviço em background e redirecionar logs para /tmp/spreadlogs
+  /usr/local/sbin/spread -c /usr/local/etc/vmsSpread.conf > /tmp/spreadlogs 2>&1 &
 
 --------------------------------
 4 - Ligar SvcServer
@@ -43,4 +42,12 @@ sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles --Não funcion
 	2 Parametro porta do Svc,
 	3 Parametro Ip RabbitMq
 	4 Parametro Ip Spread
-	java -jar /var/tp02/SvcServer.jar 34.78.207.63 8000 34.76.4.1 34.78.207.63 
+	java -jar /var/tp02/SvcServer.jar 34.76.222.27 8000 34.76.4.1 34.78.207.63 
+	
+	34.76.222.27 50051 34.78.172.32 34.78.172.32
+	
+---------------------
+5 - Ligar Worker
+
+	
+	
