@@ -17,7 +17,8 @@ public class AppRegisterServer {
             int port = 50051;
             String spreadIp = "34.78.207.63";
             if (args.length > 1) {
-                port = Integer.parseInt(args[0]);
+                myIp = args[0];
+                port = Integer.parseInt(args[1]);
                 spreadIp = args[2];
             }
 
