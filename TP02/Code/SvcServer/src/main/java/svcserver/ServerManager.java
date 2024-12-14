@@ -15,27 +15,7 @@ public class ServerManager {
     }
 
     public static void addNewServer(long groupMemberId, Server server){
-        if (SvcServer.debugMode) {
-            var atuais = getAllServers();
-            System.out.println("ServerManager. Lista atual: " + atuais.size());
-            for (int i = 0; i < atuais.size(); ++i) {
-                System.out.print(atuais.get(i) + "; ");
-            }
-            System.out.println();
-        }
-
         servers.putIfAbsent(groupMemberId, server);
-
-
-        if (SvcServer.debugMode) {
-            var atuais = getAllServers();
-            System.out.println("ServerManager. New member add: " + groupMemberId + " Qtd servers in list: " + atuais.size());
-
-            for (int i = 0; i < atuais.size(); ++i) {
-                System.out.print(atuais.get(i) + "; ");
-            }
-            System.out.println();
-        }
     }
 
     public static void removeServer(long groupMemberId){
