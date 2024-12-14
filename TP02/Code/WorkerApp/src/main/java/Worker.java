@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import com.rabbitmq.client.*;
 import spread.SpreadConnection;
 import spread.SpreadGroup;
@@ -16,11 +17,11 @@ import java.nio.file.Paths;
  */
 public class Worker {
 
-    // RabbitMQ configuration
-    private static String RABBITMQ_IP = "34.76.83.57";
+    // RabbitMQ parameters
+    private String rabbitMqIp;
     private static int RABBITMQ_PORT = 15672;
-    private static final String EXCHANGE_NAME = "ExchangeD";
-    private static final String QUEUE_NAME = "QueueD";
+    private String exchangeName;
+    private String queueName;
 
     // Gluster file path for reading and saving images
     private static final String GLUSTER_PATH = "/var/sharedfiles";
@@ -29,18 +30,30 @@ public class Worker {
     private static final String SPREAD_GROUP_NAME = "Servers";
     private SpreadConnection spreadConnection;
 
+    // Adicione o Gson como parte da classe Worker
+    private final Gson gson = new Gson();
+
     /**
      * Constructs the Worker object and sets up connections with Spread and RabbitMQ.
      *
+     * @param rabbitMqIp    The RabbitMQ server IP.
+     * @param exchangeName  The RabbitMQ exchange name.
+     * @param queueName     The RabbitMQ queue name.
      * @throws Exception If an error occurs while setting up the connections.
      */
-    public Worker() throws Exception {
+    public Worker(String rabbitMqIp, String exchangeName, String queueName) throws Exception {
+        this.rabbitMqIp = rabbitMqIp;
+        this.exchangeName = exchangeName;
+        this.queueName = queueName;
+
         // Configure connection with Spread
         spreadConnection = new SpreadConnection();
         spreadConnection.connect(null, 0, "Worker", false, true);
         System.out.println("Worker connected to Spread!");
 
     }
+
+
 
     /**
      * Starts consuming messages from the RabbitMQ queue, processes each message, and
@@ -50,7 +63,7 @@ public class Worker {
      */
     public void processMessages() throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(RABBITMQ_IP);
+        factory.setHost(rabbitMqIp);
         factory.setPort(RABBITMQ_PORT);
 
         // Establish connection to RabbitMQ and set up the channel
@@ -58,27 +71,33 @@ public class Worker {
              Channel channel = connection.createChannel()) {
 
             // Declare exchange and queue
-            channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
-            channel.queueDeclare(QUEUE_NAME, true, false, false, null);
-            channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");
+            channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT);
+            channel.queueDeclare(queueName, true, false, false, null);
+            channel.queueBind(queueName, exchangeName, "");
 
             System.out.println("Worker waiting for messages...");
 
             // Consumer with manual acknowledge and basicNack support
-            channel.basicConsume(QUEUE_NAME, false, (consumerTag, delivery) -> {
+            channel.basicConsume(queueName, false, (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), "UTF-8");
                 String routingKey = delivery.getEnvelope().getRoutingKey();
                 System.out.println("Message received: " + message);
                 System.out.println("Consumer Tag:" + consumerTag + " | Routing Key:" + routingKey);
 
                 try {
-                    // Process the received message
-                    String[] parts = message.split("\\|");
-                    String fileName = parts[0]; // File name in Gluster
-                    String words = parts[1];   // Words to mark on image
+                    // Converter JSON para o modelo ImageModel
+                    ImageModel imageModel = gson.fromJson(message, ImageModel.class);
+                    System.out.println("Parsed ImageModel: " + imageModel);
+
+                    // Processar a imagem com as informações do ImageModel
+                    String fileName = imageModel.getImageName();
+                    String[] marks = imageModel.getMarks();
+
+                    // Combinar as marcas em uma string única para adicionar na imagem
+                    String combinedMarks = String.join(", ", marks);
 
                     // Process the image and then notify completion
-                    processImage(fileName, words);
+                    processImage(fileName, combinedMarks);
                     notifyCompletion(fileName);
 
                     // Acknowledge message processing
@@ -143,12 +162,24 @@ public class Worker {
     /**
      * The main method to initialize the Worker and start processing messages.
      *
-     * @param args Command-line arguments
+     * @param args Command-line arguments.
+     *             args[0] - RabbitMQ IP
+     *             args[1] - Exchange name
+     *             args[2] - Queue name
      */
     public static void main(String[] args) {
+        if (args.length < 3) {
+            System.err.println("Usage: java Worker <RabbitMQ_IP> <Exchange_Name> <Queue_Name>");
+            return;
+        }
+
         try {
             // Create and run the Worker
-            Worker worker = new Worker();
+            String rabbitMqIp = args[0];
+            String exchangeName = args[1];
+            String queueName = args[2];
+
+            Worker worker = new Worker(rabbitMqIp, exchangeName, queueName);
             worker.processMessages();
         } catch (Exception e) {
             // Handle any errors that occur during the initialization or message processing
