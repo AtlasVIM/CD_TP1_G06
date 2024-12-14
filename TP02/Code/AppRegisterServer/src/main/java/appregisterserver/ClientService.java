@@ -12,8 +12,7 @@ public class ClientService extends RegisterClientServiceGrpc.RegisterClientServi
 
     @Override
     public void getSvcServer(VoidRequest request, StreamObserver<SvcServerAddress> responseObserver) {
-        super.getSvcServer(request, responseObserver);
-
+        System.out.println("Trying to get new SVC Server for Client!");
         // Obtém o próximo servidor com a menor contagem de clientes
         Server server = ServerManager.getServerWithLeastClients();
         if (server != null) {
@@ -26,6 +25,7 @@ public class ClientService extends RegisterClientServiceGrpc.RegisterClientServi
             // Incrementa contagem de clientes
             server.incrementClients();
             responseObserver.onNext(svcServer);
+            System.out.println("Sent SVC Server to Client!");
         } else {
             responseObserver.onError(new RuntimeException("No available servers"));
         }

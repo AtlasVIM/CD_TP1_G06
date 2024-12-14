@@ -32,7 +32,7 @@ public class ClientServer {
                 registerPort = Integer.parseInt(args[1]);
             }
 
-            /*registerChannel = ManagedChannelBuilder
+            registerChannel = ManagedChannelBuilder
                     .forAddress(registerIP, registerPort)
                     .usePlaintext()
                     .build();
@@ -41,15 +41,13 @@ public class ClientServer {
             registerBlockStub = RegisterClientServiceGrpc.newBlockingStub(registerChannel);
             System.out.println("Register Server at " + registerIP + ":" + registerPort + " connected");
             SvcServerAddress svcServerAddress = registerBlockStub.getSvcServer(VoidRequest.newBuilder().build());
-*/
 
             svcChannel = ManagedChannelBuilder
-                    //.forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
-                    .forAddress("34.140.182.157", 8000)
+                    .forAddress(svcServerAddress.getIp(), svcServerAddress.getPort())
                     .usePlaintext()
                     .build();
 
-            //System.out.println("Connected to SVC Server at" + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
+            System.out.println("Connected to SVC Server at " + svcServerAddress.getIp() + ":" + svcServerAddress.getPort());
 
             svcStub = SvcClientServiceGrpc.newStub(svcChannel);
             svcBlockingStub = SvcClientServiceGrpc.newBlockingStub(svcChannel);

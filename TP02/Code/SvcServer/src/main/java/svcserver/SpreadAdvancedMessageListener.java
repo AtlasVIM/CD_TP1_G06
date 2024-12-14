@@ -96,7 +96,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
         else {
             SpreadGroup[] members = info.getMembers();
 
-            if (members.length == 1){//Isso quer dizer que tem apenas 1 Svc, Inicio do processo e esse vai ser o leader
+            if (members.length == 2){//Isso quer dizer que tem apenas 1 Svc, Inicio do processo e esse vai ser o leader
                 ServerManager.addNewServer(SvcServer.mySpreadId,
                                             new Server(SvcServer.myIp,
                                                        SvcServer.myPort,

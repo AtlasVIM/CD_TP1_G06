@@ -18,7 +18,6 @@ import java.util.Map;
 public class SpreadGroupManager {
 
     private SpreadConnection connection;
-    private final Map<String, SpreadGroup> groupsBelonging = new HashMap<String,SpreadGroup>();
 
     private SpreadAdvancedMessageListener advancedMsgHandling;
 
@@ -47,15 +46,6 @@ public class SpreadGroupManager {
     public void joinToGroup(String groupName) throws SpreadException {
         SpreadGroup newGroup = new SpreadGroup();
         newGroup.join(connection, groupName);
-        groupsBelonging.put(groupName,newGroup);
-    }
-
-    public void sendMessage(String groupToSend, SpreadGroupMessage grpMessage) throws SpreadException {
-        SpreadMessage msg = new SpreadMessage();
-        msg.setSafe();
-        msg.addGroup(groupToSend);
-        msg.setData(convertSpreadGroupMessageToBytes(grpMessage));
-        connection.multicast(msg);
     }
 
     //Serialize object SpreadGroupMessage into byte[]
@@ -69,15 +59,6 @@ public class SpreadGroupManager {
         Gson gson = new GsonBuilder().create();
         String newJsonString = new String(grpMessage, StandardCharsets.UTF_8);
         return gson.fromJson(newJsonString, SpreadGroupMessage.class);
-    }
-
-    public void groupLeave(String nameToLeave) throws SpreadException {
-        SpreadGroup group=groupsBelonging.get(nameToLeave);
-        if(group != null) {
-            group.leave();
-            groupsBelonging.remove(nameToLeave);
-            System.out.println("Left from " + group + ".");
-        } else  { System.out.println("No group to leave."); }
     }
 
     public void close() throws SpreadException {
