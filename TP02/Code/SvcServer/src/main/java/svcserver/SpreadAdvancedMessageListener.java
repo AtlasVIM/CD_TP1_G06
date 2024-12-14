@@ -2,9 +2,6 @@ package svcserver;
 
 import spread.*;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     private final SpreadConnection connection;
 
@@ -96,18 +93,6 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
                 e.printStackTrace();
             }
         }
-        /*else if (info.isCausedByLeave()){
-            var member = info.getLeft();
-            if (SvcServer.debugMode)
-                System.out.print("Member isCausedByLeave: " + member);
-
-            try {
-                SvcServer.spreadManager.handleDisconnectedMember(member);
-            } catch (InterruptedException e) {
-                System.out.println("An unexpected error occurred when handleDisconnectedMember");
-                e.printStackTrace();
-            }
-        }*/
         else {
             SpreadGroup[] members = info.getMembers();
 
@@ -123,7 +108,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
                 if (SvcServer.debugMode)
                     System.out.println("MemberInfo Leader List. Qtd Process in list: "+ProcessManager.getAllProcesses().size()+ ". Qtd Servers in list "+ServerManager.getAllServers().size());
 
-                //Não manda mensagem ao grupo de novo leader, porque não tem mais ninguem no grupo. Não é necessario
+                SvcServer.spreadManager.sendMessageAsLeader(); //Manda mensagem para o Register receber.
             }
 
             if (SvcServer.debugMode) {

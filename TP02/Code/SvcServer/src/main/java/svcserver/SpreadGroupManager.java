@@ -15,7 +15,6 @@ public class SpreadGroupManager {
     private SpreadConnection connection;
 
     private SpreadAdvancedMessageListener msgHandlingAdvanced;
-    private SpreadBasicMessageListener msgHandlingBasic;
 
     public SpreadGroupManager(String memberName, String address, int port) {
         // Establish the spread connection.
@@ -24,9 +23,7 @@ public class SpreadGroupManager {
             connection.connect(InetAddress.getByName(address), port, memberName, false, true);
 
             msgHandlingAdvanced = new SpreadAdvancedMessageListener(connection);
-            msgHandlingBasic = new SpreadBasicMessageListener(connection);
             connection.add(msgHandlingAdvanced);
-            //connection.add(msgHandlingBasic);
             System.out.println("Connected to Spread at "+address+":"+port);
         }
         catch(SpreadException e)  {
@@ -84,7 +81,7 @@ public class SpreadGroupManager {
         var server = ServerManager.getServer(spreadMemberId);
 
         ServerManager.removeServer(spreadMemberId); //Atualiza Lista
-        System.out.println("Member removed from List: "+spreadMemberId);
+        System.out.println("GroupManager. Member disconnected: "+spreadMemberId);
 
         if (server.isGroupLeader() && ServerManager.getNewLeader() == SvcServer.mySpreadId){ //Se o server que saiu for um Leader, promove nova eleição
             //Possivel problema se nesse momento getNewLeader, entrar novo server e este tiver um numero maior,
@@ -93,6 +90,7 @@ public class SpreadGroupManager {
             SvcServer.iAmGroupLeader = true;
             ServerManager.setNewLeader(SvcServer.mySpreadId);
             sendMessageAsLeader();
+            System.out.println("GroupManager. New Leader: "+SvcServer.mySpreadId);
 
         }
     }
@@ -100,7 +98,6 @@ public class SpreadGroupManager {
     public void close() throws SpreadException {
         // remove listener
         connection.remove(msgHandlingAdvanced);
-        connection.remove(msgHandlingBasic);
         // Disconnect.
         connection.disconnect();
     }
