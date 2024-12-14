@@ -20,9 +20,7 @@ public class AppRegisterServer {
                 spreadIp = args[2];
             }
 
-
             ServerManager serverManager = new ServerManager();
-
             io.grpc.Server svc = ServerBuilder
                     .forPort(port)
                     .addService(new ClientService(serverManager))

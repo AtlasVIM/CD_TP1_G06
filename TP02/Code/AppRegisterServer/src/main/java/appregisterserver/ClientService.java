@@ -18,7 +18,6 @@ public class ClientService extends RegisterClientServiceGrpc.RegisterClientServi
 
         // Obtém o próximo servidor com a menor contagem de clientes
         Server server = manager.getServerWithLeastClients();
-
         if (server != null) {
 
             SvcServerAddress svcServer = SvcServerAddress.newBuilder()
