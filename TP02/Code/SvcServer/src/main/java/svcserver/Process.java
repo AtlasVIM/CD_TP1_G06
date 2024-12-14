@@ -38,6 +38,12 @@ public class Process {
         uploadRequestObject = new ByteArrayOutputStream();
     }
 
+    public Process(String id, String imageName) {
+        this.id = id;
+        this.imageName = imageName;
+        status = ProcessStatus.PROCESSING;
+    }
+
     public String getId(){
         return id;
     }

@@ -24,6 +24,10 @@ public class SpreadGroupMessage {
         this.processes = ProcessManager.getAllProcesses();
     }
 
+    public SpreadGroupMessage(String id, String imgName) {
+        this.newProcess = new Process(id, imgName);
+    }
+
     public SpreadTypeServer getTypeServer() {
         return typeServer;
     }

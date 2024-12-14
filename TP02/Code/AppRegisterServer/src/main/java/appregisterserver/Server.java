@@ -4,7 +4,6 @@ public class Server {
     private String ip;
     private int port;
     private long groupMemberId;
-    private boolean isGroupLeader;
     private int connectedClients;
 
     public Server(String ip, int port) {
