@@ -37,7 +37,7 @@ public class ServerManager {
 
 
     // Método para obter o servidor com a menor contagem de clientes
-    public Server getServerWithLeastClients() {
+    public static Server getServerWithLeastClients() {
 
         return localServersList.stream()
                 .min((server1, server2) -> Integer.compare(server1.getConnectedClients(), server2.getConnectedClients()))
@@ -48,5 +48,21 @@ public class ServerManager {
         List<Server> serverList = new ArrayList<>();
         serverList.addAll(servers.values());
         return serverList;
+    }
+
+    public static void updateServers(List<Server> newServers) {
+        //Add new servers to the list
+        for (Server newServer : newServers) {
+            if (!localServersList.contains(newServer)) {
+                localServersList.add(newServer);
+            }
+        }
+
+        // If server is not on newList but is in oldList, remove
+        for (Server oldServer : localServersList){
+            if (!newServers.contains(oldServer)){
+                localServersList.remove(oldServer);
+            }
+        }
     }
 }

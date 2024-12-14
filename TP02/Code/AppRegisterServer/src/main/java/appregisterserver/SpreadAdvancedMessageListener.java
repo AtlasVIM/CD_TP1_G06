@@ -6,11 +6,9 @@ import java.util.List;
 
 public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
     private final SpreadConnection connection;
-    private final ServerManager serverManager;
 
-    public SpreadAdvancedMessageListener(SpreadConnection connection, ServerManager serverManager) {
+    public SpreadAdvancedMessageListener(SpreadConnection connection) {
         this.connection = connection;
-        this.serverManager = serverManager;
     }
 
     @Override
@@ -21,7 +19,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
             if (message.getTypeServer() == SpreadTypeServer.LEADER) {
                 // Atualiza a lista de servidores e processos
                 List<Server> servers = message.servers;
-                updateServers(servers);
+                ServerManager.updateServers(servers);
 
             } else if (message.getTypeServer() == SpreadTypeServer.SVC) {
                 // A mensagem é do tipo SVC (servidor específico)
@@ -31,13 +29,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
             }
     }
 
-    private void updateServers(List<Server> servers) {
-            for (Server server : servers) {
-                if (!serverManager.getAllServers().contains(server)) {
-                    serverManager.addServer(server);
-                }
-            }
-    }
+
 
     @Override
     public void membershipMessageReceived(SpreadMessage spreadMessage) {

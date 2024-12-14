@@ -19,7 +19,6 @@ public class SpreadGroupManager {
 
     private SpreadConnection connection;
     private final Map<String, SpreadGroup> groupsBelonging = new HashMap<String,SpreadGroup>();
-    public static List<Server> servers;
 
     private SpreadAdvancedMessageListener advancedMsgHandling;
 
