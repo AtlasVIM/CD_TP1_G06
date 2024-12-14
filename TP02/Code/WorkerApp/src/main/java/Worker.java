@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.rabbitmq.client.*;
 import spread.SpreadConnection;
 import spread.SpreadGroup;
@@ -9,7 +10,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Worker class that consumes messages from a RabbitMQ queue, processes images by adding text to them,
@@ -19,9 +23,10 @@ public class Worker {
 
     // RabbitMQ parameters
     private String rabbitMqIp;
-    private static int RABBITMQ_PORT = 15672;
+    private static int RABBITMQ_PORT = 5672;
     private String exchangeName;
     private String queueName;
+    private String spreadIp;
 
     // Gluster file path for reading and saving images
     private static final String GLUSTER_PATH = "/var/sharedfiles";
@@ -39,18 +44,19 @@ public class Worker {
      * @param rabbitMqIp    The RabbitMQ server IP.
      * @param exchangeName  The RabbitMQ exchange name.
      * @param queueName     The RabbitMQ queue name.
+     * @param spreadIp      The spread Ip Address.
      * @throws Exception If an error occurs while setting up the connections.
      */
-    public Worker(String rabbitMqIp, String exchangeName, String queueName) throws Exception {
+    public Worker(String rabbitMqIp, String exchangeName, String queueName, String spreadIp) throws Exception {
         this.rabbitMqIp = rabbitMqIp;
         this.exchangeName = exchangeName;
         this.queueName = queueName;
+        this.spreadIp = spreadIp;
 
         // Configure connection with Spread
         spreadConnection = new SpreadConnection();
-        spreadConnection.connect(null, 0, "Worker", false, true);
-        System.out.println("Worker connected to Spread!");
-
+        spreadConnection.connect(InetAddress.getByName(spreadIp), 4803, "Worker", false, true);
+        System.out.println("Worker connected to Spread! "+spreadIp+":4803");
     }
 
 
@@ -62,31 +68,29 @@ public class Worker {
      * @throws Exception If an error occurs during the message consumption or processing.
      */
     public void processMessages() throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(rabbitMqIp);
-        factory.setPort(RABBITMQ_PORT);
-
         // Establish connection to RabbitMQ and set up the channel
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
+        try
+        {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost(rabbitMqIp);
+            factory.setPort(RABBITMQ_PORT);
 
-            // Declare exchange and queue
-            channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT);
-            channel.queueDeclare(queueName, true, false, false, null);
-            channel.queueBind(queueName, exchangeName, "");
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
 
-            System.out.println("Worker waiting for messages...");
+            System.out.println("Worker connected in RabbitMQ at "+rabbitMqIp+":"+RABBITMQ_PORT+". Waiting new messages...");
 
             // Consumer with manual acknowledge and basicNack support
             channel.basicConsume(queueName, false, (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), "UTF-8");
                 String routingKey = delivery.getEnvelope().getRoutingKey();
-                System.out.println("Message received: " + message);
-                System.out.println("Consumer Tag:" + consumerTag + " | Routing Key:" + routingKey);
+                //System.out.println("Message received: " + message);
+                //System.out.println("Consumer Tag:" + consumerTag + " | Routing Key:" + routingKey);
 
                 try {
                     // Convert JSON to ImageModel model
                     ImageModel imageModel = gson.fromJson(message, ImageModel.class);
+
                     System.out.println("Parsed ImageModel: " + imageModel);
 
                     // Process the image with the ImageModel information
@@ -98,7 +102,7 @@ public class Worker {
 
                     // Process the image and then notify completion
                     processImage(fileName, combinedMarks);
-                    notifyCompletion(fileName);
+                    notifyCompletion(imageModel.getId(), fileName);
 
                     // Acknowledge message processing
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -110,8 +114,12 @@ public class Worker {
                     // Reject message and requeue if there's an error
                     channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, true);
                     System.out.println("Message rejected and requeued!");
+                    e.printStackTrace();
                 }
             }, consumerTag -> {});
+        } catch (Exception e) {
+            System.out.println("An unexpected error occur when trying connect to RabbitMQ");
+            e.printStackTrace();
         }
     }
 
@@ -147,16 +155,26 @@ public class Worker {
      * @param fileName The name of the processed file uploaded by the user.
      * @throws Exception If an error occurs while sending the multicast message.
      */
-    private void notifyCompletion(String fileName) throws Exception {
+    private void notifyCompletion(String requestId, String fileName) throws Exception {
         // Create and send a notification message to Spread group
-        String notification = "Processed: " + fileName +" uploaded by user!";
+
+        var message = new SpreadGroupMessage(requestId, fileName);
+
         SpreadMessage spreadMessage = new SpreadMessage();
+        spreadMessage.setSafe();
         spreadMessage.setReliable(); // Ensure message delivery reliability
         spreadMessage.addGroup(SPREAD_GROUP_NAME); // Send to the "Servers" group
-        spreadMessage.setData(notification.getBytes());
+        spreadMessage.setData(convertSpreadGroupMessageToBytes(message));
 
         spreadConnection.multicast(spreadMessage); // Send the message
-        System.out.println("Notification sent to servers: " + notification);
+        System.out.println("Notification sent to servers.");
+    }
+
+    //Serialize object SpreadGroupMessage into byte[]
+    private byte[] convertSpreadGroupMessageToBytes(SpreadGroupMessage grpMessage){
+        Gson gson = new GsonBuilder().create();
+        String newJsonString = gson.toJson(grpMessage);
+        return newJsonString.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
@@ -168,8 +186,8 @@ public class Worker {
      *             args[2] - Queue name
      */
     public static void main(String[] args) {
-        if (args.length < 3) {
-            System.err.println("Usage: java Worker <RabbitMQ_IP> <Exchange_Name> <Queue_Name>");
+        if (args.length < 4) {
+            System.err.println("Usage: java Worker <RabbitMQ_IP> <Exchange_Name> <Queue_Name> <SpreadId>");
             return;
         }
 
@@ -178,12 +196,14 @@ public class Worker {
             String rabbitMqIp = args[0];
             String exchangeName = args[1];
             String queueName = args[2];
+            String spreadIp = args[3];
 
-            Worker worker = new Worker(rabbitMqIp, exchangeName, queueName);
+            Worker worker = new Worker(rabbitMqIp, exchangeName, queueName, spreadIp);
             worker.processMessages();
         } catch (Exception e) {
             // Handle any errors that occur during the initialization or message processing
-            System.err.println("Error initializing Worker: " + e.getMessage());
+            System.err.println("Error initializing Worker ");
+            e.printStackTrace();
         }
     }
 }

@@ -1,9 +1,7 @@
 public class ImageModel {
     private String id;
     private String imageName;
-    private String image;
     private String[] marks;
-    private String message;
 
     public ImageModel() {
     }
@@ -25,14 +23,6 @@ public class ImageModel {
 
     public void setMarks(String[] marks) {
         this.marks = marks;
-    }
-
-    public String getImage() {
-        return image;
-    }
-
-    public void setImage(String image) {
-        this.image = image;
     }
 
     @Override

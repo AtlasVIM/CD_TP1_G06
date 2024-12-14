@@ -19,7 +19,7 @@ public class SvcServer {
     public static Channel channelRabbitMq;
     public static SpreadGroupManager spreadManager;
     public final static String SpreadGroup = "Servers";
-    public final static boolean debugMode = true;
+    public static boolean debugMode = true;
     static Logger logger = new SimpleLoggerFactory().getLogger("RabbitMQ-configurator");
     public static String myIp;
     public static int myPort;
@@ -33,11 +33,12 @@ public class SvcServer {
             myIp = "34.76.222.27";
             String rabbitMQ_Ip = "34.78.172.32";
             String spreadIp = "34.78.172.32";
-            if (args.length == 4) {
+            if (args.length == 5) {
                 myIp = args[0];
                 myPort = Integer.parseInt(args[1]);
                 rabbitMQ_Ip = args[2];
                 spreadIp = args[3];
+                debugMode = Boolean.parseBoolean(args[4]);
             }
 
             io.grpc.Server svc = ServerBuilder

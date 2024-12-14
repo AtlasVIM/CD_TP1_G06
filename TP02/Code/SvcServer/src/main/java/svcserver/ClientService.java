@@ -156,9 +156,11 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
     }
 
     public void sendNewMessageToRabbitMQ(ImageModel imageModel) throws IOException, TimeoutException {
-        var message = imageModel.toString();
-        SvcServer.channelRabbitMq.basicPublish("ExchangeD", "", true, null, message.getBytes());
-        System.out.println("Svc Message Sent to RabbitMQ:" + message);
+        Gson gson = new GsonBuilder().create();
+        imageModel.setImage("");
+        String newJsonString = gson.toJson(imageModel);
+        SvcServer.channelRabbitMq.basicPublish("ExchangeD", "", true, null, newJsonString.getBytes());
+        System.out.println("Svc Message Sent to RabbitMQ:" + newJsonString);
     }
 
     private byte[] BuildImageModelInBytesWithImage(String imagePath) throws FileNotFoundException {
@@ -180,8 +182,8 @@ public class ClientService extends SvcClientServiceGrpc.SvcClientServiceImplBase
         String encodedString = Base64.getEncoder().encodeToString(fileContent);
 
         imgObj.setImage(encodedString);
-        String base64Img = gson.toJson(imgObj);
-        return base64Img.getBytes(StandardCharsets.UTF_8);
+        String newJsonString = gson.toJson(imgObj);
+        return newJsonString.getBytes(StandardCharsets.UTF_8);
     }
 
 

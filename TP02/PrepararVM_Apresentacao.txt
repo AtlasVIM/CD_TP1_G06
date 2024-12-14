@@ -1,9 +1,10 @@
 Preparar maquinas para apresentação
-C:\Downloads\Teste.png
+C:\Downloads\Teste2.png
+81392584-cf59-45b0-8f6c-c9bf9b98bda9
 
 1 - Ligar VM rabbitMQ 
 	 sudo docker start rabbitmg
-		Acessar http://34.76.4.1:15672/
+		Acessar http://35.205.52.107:15672/
 			usuario: guest
 			Senha: guest
 
@@ -22,7 +23,8 @@ C:\Downloads\Teste.png
 mount | grep glusterfs
 sudo mount -t glusterfs svc-tpa2-rabbitmq-broker:/glustervol /var/sharedfiles
 sudo mount -t glusterfs svc-tpa2-spread:/glustervol /var/sharedfiles
-sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles 
+
+sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles nao esta funcionando 
 
 ------------------------
 3 - Spread
@@ -42,12 +44,18 @@ sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles
 	2 Parametro porta do Svc,
 	3 Parametro Ip RabbitMq
 	4 Parametro Ip Spread
-	java -jar /var/tp02/SvcServer.jar 34.76.222.27 8000 34.76.4.1 34.78.207.63 
+	5 DebugMode
+	java -jar /var/tp02/SvcServer.jar 34.140.182.157 8000 35.205.52.107 34.140.182.157 true
 	
-	34.76.222.27 50051 34.78.172.32 34.78.172.32
+	34.140.182.157 8000 35.205.52.107 34.140.182.157
 	
 ---------------------
 5 - Ligar Worker
+	1 Parametro Ip RabbitMq
+	2 Parametro Exchange name
+	3 Parametro Queue name
+	4 Parametro Ip Spread 
+	java -jar /var/tp02/WorkerApp.jar 35.205.52.107 ExchangeD QueueD 34.140.182.157
 
 	
 	
