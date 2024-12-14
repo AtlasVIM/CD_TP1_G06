@@ -85,15 +85,15 @@ public class Worker {
                 System.out.println("Consumer Tag:" + consumerTag + " | Routing Key:" + routingKey);
 
                 try {
-                    // Converter JSON para o modelo ImageModel
+                    // Convert JSON to ImageModel model
                     ImageModel imageModel = gson.fromJson(message, ImageModel.class);
                     System.out.println("Parsed ImageModel: " + imageModel);
 
-                    // Processar a imagem com as informações do ImageModel
+                    // Process the image with the ImageModel information
                     String fileName = imageModel.getImageName();
                     String[] marks = imageModel.getMarks();
 
-                    // Combinar as marcas em uma string única para adicionar na imagem
+                    // Combine marks into a single string to add to the image
                     String combinedMarks = String.join(", ", marks);
 
                     // Process the image and then notify completion
