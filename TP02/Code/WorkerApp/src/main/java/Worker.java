@@ -102,7 +102,7 @@ public class Worker {
 
                     // Process the image and then notify completion
                     processImage(fileName, combinedMarks);
-                    notifyCompletion(imageModel.getId(), fileName);
+                    notifyCompletion(imageModel.getId(), fileName.replace(".", "_marks."));
 
                     // Acknowledge message processing
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -144,7 +144,7 @@ public class Worker {
         g.dispose();
 
         // Save the processed image with a new file name
-        File outputFile = new File(Paths.get(GLUSTER_PATH, fileName.replace(".png", "_marks.png")).toString());
+        File outputFile = new File(Paths.get(GLUSTER_PATH, fileName.replace(".", "_marks.")).toString());
         ImageIO.write(image, "png", outputFile);
         System.out.println("Image processed and saved: " + outputFile.getAbsolutePath());
     }
