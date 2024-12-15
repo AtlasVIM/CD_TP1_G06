@@ -24,6 +24,7 @@ public class ClientServer {
     private static RegisterClientServiceGrpc.RegisterClientServiceBlockingStub registerBlockStub;
     private static SvcClientServiceGrpc.SvcClientServiceStub svcStub;
     private static SvcClientServiceGrpc.SvcClientServiceBlockingStub svcBlockingStub;
+    private static ByteArrayOutputStream downloadRequestObject = new ByteArrayOutputStream();
 
     public static void main(String[] args) {
         try {
@@ -158,11 +159,22 @@ public class ClientServer {
 
                 try {
                     if (downloadResponse.getProcessCompleted()) {
-                        Gson gson = new Gson();
-                        byte[] byteArr = downloadResponse.getDownloadObject().toByteArray();
-                        String jsonString = new String(byteArr, StandardCharsets.UTF_8);
-                        ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
-                        if (debugMode) {
+
+                        byte[] chunk = downloadResponse.getDownloadObject().toByteArray();
+
+                        try {
+                            downloadRequestObject.write(chunk);
+                        } catch (IOException e) {
+                            System.out.println("An unexpected error occur when setChunkUploadRequestObject");
+                            e.printStackTrace();
+                        }
+
+                        if (downloadResponse.getChunkIndex()+1 == downloadResponse.getTotalChunks()){
+                            Gson gson = new Gson();
+                            byte[] binData = downloadRequestObject.toByteArray();
+                            String jsonString = new String(binData, StandardCharsets.UTF_8);
+                            ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
+                            if (debugMode) {
                             System.out.println(
                                     "DOWNLOADING IMAGE "
                                             + downloadedImageObj.getImageName() + ": "
@@ -173,7 +185,7 @@ public class ClientServer {
                             );
                         }
 
-                        if (fileOutputStream == null && bufferedOutputStream == null) {
+                            if (fileOutputStream == null && bufferedOutputStream == null) {
 
                             File downloadedImage = new File(path, downloadedImageObj.getImageName());
 
@@ -181,10 +193,11 @@ public class ClientServer {
                             bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
 
                         }
-                        byte[] imgData = downloadResponse.getDownloadObject().toByteArray();
 
-                        bufferedOutputStream.write(imgData);
-                        bufferedOutputStream.flush();
+                            bufferedOutputStream.write(imgData);
+                            bufferedOutputStream.flush();
+                        }
+
                     } else {
                         System.out.println(downloadResponse.getMessage());
                     }

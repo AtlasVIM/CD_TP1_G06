@@ -1,6 +1,7 @@
 Preparar maquinas para apresentação
 C:\Downloads\Teste2.png
-a5113539-405a-4979-8d96-8ee8c94ae51e
+C:\Downloads\image.png
+6539167d-6a9d-491b-8756-5c1c33730353
 
 1 - Ligar VM rabbitMQ 
 	 sudo docker start rabbitmg
@@ -62,7 +63,10 @@ sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles nao esta funci
 	1 Parametro Ip Spread 
 	2 Parametro Porta
 	java -jar /var/tp02/AppRegisterServer.jar 34.140.182.157 8000
-	
+
+7 - Ligar Client
+	1 Parametro Ip Register
+	2 Parametro Porta Register
 	
 Sequencia para ligar
 1 Register

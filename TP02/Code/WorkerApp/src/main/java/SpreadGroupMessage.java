@@ -8,6 +8,7 @@ public class SpreadGroupMessage {
 
     //quando for newSvc
     public SpreadGroupMessage(String requestId, String imageNameMarks) {
+        this.requestId = requestId;
         this.typeServer = SpreadTypeServer.WORKER;
         this.imageNameMarks = imageNameMarks;
     }
