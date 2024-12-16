@@ -16,6 +16,9 @@ C:\Downloads\image.png
 		 sudo service glusterd status
 		 sudo service glusterd start
 		 ls /var/sharedfiles
+		 
+sudo gluster peer status
+sudo gluster volume status
 		
 10.132.0.16 svc-tap2-01 
 10.132.0.19 svc-tpa2-rabbitmq-broker
@@ -24,8 +27,7 @@ C:\Downloads\image.png
 mount | grep glusterfs
 sudo mount -t glusterfs svc-tpa2-rabbitmq-broker:/glustervol /var/sharedfiles
 sudo mount -t glusterfs svc-tpa2-spread:/glustervol /var/sharedfiles
-
-sudo mount -t glusterfs svc-tap02-01:/glustervol /var/sharedfiles nao esta funcionando 
+sudo mount -t glusterfs svc-tap2-01:/glustervol /var/sharedfiles
 
 ------------------------
 3 - Spread
