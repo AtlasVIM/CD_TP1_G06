@@ -163,6 +163,10 @@ public class ClientServer {
                         byte[] chunk = downloadResponse.getDownloadObject().toByteArray();
 
                         try {
+                            if (downloadResponse.getChunkIndex() == 0){
+                                downloadRequestObject = new ByteArrayOutputStream();
+                            }
+
                             downloadRequestObject.write(chunk);
                         } catch (IOException e) {
                             System.out.println("An unexpected error occur when setChunkUploadRequestObject");
@@ -173,29 +177,31 @@ public class ClientServer {
                             Gson gson = new Gson();
                             byte[] binData = downloadRequestObject.toByteArray();
                             String jsonString = new String(binData, StandardCharsets.UTF_8);
+                            System.out.println("Json "+jsonString);
                             ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
                             if (debugMode) {
-                            System.out.println(
-                                    "DOWNLOADING IMAGE "
-                                            + downloadedImageObj.getImageName() + ": "
-                                            + " CHUNK "
-                                            + downloadResponse.getChunkIndex()
-                                            + " OUT OF "
-                                            + downloadResponse.getTotalChunks()
-                            );
-                        }
+                                System.out.println(
+                                        "DOWNLOADING IMAGE "
+                                                + downloadedImageObj.getImageName() + ": "
+                                                + " CHUNK "
+                                                + downloadResponse.getChunkIndex()
+                                                + " OUT OF "
+                                                + downloadResponse.getTotalChunks()
+                                );
+                            }
 
-                            if (fileOutputStream == null && bufferedOutputStream == null) {
+                            var filePath = path +"/"+downloadedImageObj.getImageName();
+                            byte[] imageBytes = Base64.getDecoder().decode(downloadedImageObj.getImage());
 
-                            File downloadedImage = new File(path, downloadedImageObj.getImageName());
+                            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                                fos.write(imageBytes);
+                                fos.close();
+                                fos.flush();
+                            } catch (Exception e) {
+                                System.out.println("An unexpected error occur when handleCompletedUpload");
+                                e.printStackTrace();
+                            }
 
-                            fileOutputStream = new FileOutputStream(downloadedImage, true);
-                            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-
-                        }
-
-                            bufferedOutputStream.write(imgData);
-                            bufferedOutputStream.flush();
                         }
 
                     } else {

@@ -1,11 +1,11 @@
 Preparar maquinas para apresentação
-C:\Downloads\Teste2.png
+C:\Downloads\Teste4.png
 C:\Downloads\image.png
-6539167d-6a9d-491b-8756-5c1c33730353
+a971fe61-9a61-4093-b3a3-63d308289cd2
 
 1 - Ligar VM rabbitMQ 
 	 sudo docker start rabbitmg
-		Acessar http://35.205.52.107:15672/
+		Acessar http://34.38.121.197:15672/
 			usuario: guest
 			Senha: guest
 
@@ -27,7 +27,7 @@ sudo gluster volume status
 mount | grep glusterfs
 sudo mount -t glusterfs svc-tpa2-rabbitmq-broker:/glustervol /var/sharedfiles
 sudo mount -t glusterfs svc-tpa2-spread:/glustervol /var/sharedfiles
-sudo mount -t glusterfs svc-tap2-01:/glustervol /var/sharedfiles
+sudo mount -t glusterfs svc-tpa2-01:/glustervol /var/sharedfiles
 
 ------------------------
 3 - Spread
@@ -42,29 +42,29 @@ sudo mount -t glusterfs svc-tap2-01:/glustervol /var/sharedfiles
   /usr/local/sbin/spread -c /usr/local/etc/vmsSpread.conf > /tmp/spreadlogs 2>&1 &
 
 --------------------------------
-4 - Ligar SvcServer
+4 - Ligar SvcServer - svc-tpa2-spread
 	1 Parametro ip do Svc,
 	2 Parametro porta do Svc,
 	3 Parametro Ip RabbitMq
 	4 Parametro Ip Spread
 	5 DebugMode
-	java -jar /var/tp02/SvcServer.jar 34.140.182.157 8000 35.205.52.107 34.140.182.157 true
+	java -jar /var/tp02/SvcServer.jar 34.77.200.187 8000 34.38.121.197 34.77.200.187 false
 	
 	34.140.182.157 8000 35.205.52.107 34.140.182.157
 	
 ---------------------
-5 - Ligar Worker
+5 - Ligar Worker - svc-tpa2-rabbitmq-broker
 	1 Parametro Ip RabbitMq
 	2 Parametro Exchange name
 	3 Parametro Queue name
 	4 Parametro Ip Spread 
-	java -jar /var/tp02/WorkerApp.jar 35.205.52.107 ExchangeD QueueD 34.140.182.157
+	java -jar /var/tp02/WorkerApp.jar 34.38.121.197 ExchangeD QueueD 34.22.152.95
 
 -----------------------
-6 - Ligar Register
+6 - Ligar Register - svc-tpa2-01
 	1 Parametro Ip Spread 
 	2 Parametro Porta
-	java -jar /var/tp02/AppRegisterServer.jar 34.140.182.157 8000
+	java -jar /var/tp02/AppRegisterServer.jar 34.22.152.95 8000
 
 7 - Ligar Client
 	1 Parametro Ip Register
@@ -74,5 +74,8 @@ Sequencia para ligar
 1 Register
 1 Svc Leader
 1 Worker
+
+
+Parar servico
 	
 	
