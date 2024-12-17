@@ -27,6 +27,7 @@ public class Worker {
     private String exchangeName;
     private String queueName;
     private String spreadIp;
+    private static String workerName;
 
     // Gluster file path for reading and saving images
     private static final String GLUSTER_PATH = "/var/sharedfiles";
@@ -55,7 +56,7 @@ public class Worker {
 
         // Configure connection with Spread
         spreadConnection = new SpreadConnection();
-        spreadConnection.connect(InetAddress.getByName(spreadIp), 4803, "Worker", false, true);
+        spreadConnection.connect(InetAddress.getByName(spreadIp), 4803, workerName, false, true);
         System.out.println("Worker connected to Spread! "+spreadIp+":4803");
     }
 
@@ -186,7 +187,7 @@ public class Worker {
      *             args[2] - Queue name
      */
     public static void main(String[] args) {
-        if (args.length < 4) {
+        if (args.length < 5) {
             System.err.println("Usage: java Worker <RabbitMQ_IP> <Exchange_Name> <Queue_Name> <SpreadId>");
             return;
         }
@@ -197,6 +198,7 @@ public class Worker {
             String exchangeName = args[1];
             String queueName = args[2];
             String spreadIp = args[3];
+            workerName = args[4];
 
             Worker worker = new Worker(rabbitMqIp, exchangeName, queueName, spreadIp);
             worker.processMessages();

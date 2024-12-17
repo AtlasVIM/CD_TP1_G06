@@ -59,7 +59,7 @@ sudo mount -t glusterfs svc-tpa2-01:/glustervol /var/sharedfiles
 	2 Parametro Exchange name
 	3 Parametro Queue name
 	4 Parametro Ip Spread 
-	java -jar /var/tp02/WorkerApp.jar 34.38.121.197 ExchangeD QueueD 34.22.152.95
+	java -jar /var/tp02/WorkerApp.jar 34.38.121.197 ExchangeD QueueD 34.22.152.95 worker1
 
 -----------------------
 6 - Ligar Register - svc-tpa2-01
