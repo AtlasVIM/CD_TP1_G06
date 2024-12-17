@@ -1,7 +1,8 @@
 Preparar maquinas para apresentação
 C:\Downloads\Teste4.png
 C:\Downloads\image.png
-a971fe61-9a61-4093-b3a3-63d308289cd2
+70481a74-e693-4722-9281-4a4652fb10f8
+c289e2be-6700-46f2-a749-14c080f3c728
 
 1 - Ligar VM rabbitMQ 
 	 sudo docker start rabbitmg
