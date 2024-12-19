@@ -81,7 +81,7 @@ public class SpreadGroupManager {
         var server = ServerManager.getServer(spreadMemberId);
 
         ServerManager.removeServer(spreadMemberId); //Atualiza Lista
-        System.out.println("GroupManager. Member disconnected: "+spreadMemberId);
+        System.out.println("GroupManager. Member disconnected: "+spreadMemberId+" It was leader: "+server.isGroupLeader() );
 
         if (server.isGroupLeader() && ServerManager.getNewLeader() == SvcServer.mySpreadId){ //Se o server que saiu for um Leader, promove nova eleição
             //Possivel problema se nesse momento getNewLeader, entrar novo server e este tiver um numero maior,

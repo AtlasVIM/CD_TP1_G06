@@ -108,7 +108,7 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
                 if (SvcServer.debugMode)
                     System.out.println("MemberInfo Leader List. Qtd Process in list: "+ProcessManager.getAllProcesses().size()+ ". Qtd Servers in list "+ServerManager.getAllServers().size());
 
-                SvcServer.spreadManager.sendMessageAsLeader(); //Manda mensagem para o Register receber.
+                //SvcServer.spreadManager.sendMessageAsLeader(); //Manda mensagem para o Register receber.
             }
 
             if (SvcServer.debugMode) {

@@ -49,7 +49,7 @@ sudo mount -t glusterfs svc-tpa2-01:/glustervol /var/sharedfiles
 	3 Parametro Ip RabbitMq
 	4 Parametro Ip Spread
 	5 DebugMode
-	java -jar /var/tp02/SvcServer.jar 104.199.78.152 8000 104.199.18.54 104.199.78.152 false
+	java -jar /var/tp02/SvcServer.jar 34.76.205.75 8000 104.199.18.54 34.76.205.75 false
 	
 	34.140.182.157 8000 35.205.52.107 34.140.182.157
 	
@@ -59,13 +59,13 @@ sudo mount -t glusterfs svc-tpa2-01:/glustervol /var/sharedfiles
 	2 Parametro Exchange name
 	3 Parametro Queue name
 	4 Parametro Ip Spread 
-	java -jar /var/tp02/WorkerApp.jar 104.199.18.54 ExchangeD QueueD 34.22.152.95 worker1
+	java -jar /var/tp02/WorkerApp.jar 104.199.18.54 ExchangeD QueueD 34.76.205.75 worker1
 
 -----------------------
 6 - Ligar Register - svc-tpa2-01
 	1 Parametro Ip Spread 
 	2 Parametro Porta
-	java -jar /var/tp02/AppRegisterServer.jar 34.76.57.128 8000
+	java -jar /var/tp02/AppRegisterServer.jar 34.76.205.75 8000
 
 7 - Ligar Client
 	1 Parametro Ip Register

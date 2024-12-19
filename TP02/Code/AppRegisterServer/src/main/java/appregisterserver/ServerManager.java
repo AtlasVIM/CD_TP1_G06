@@ -1,45 +1,18 @@
 package appregisterserver;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerManager {
-    private static final List<Server> localServersList = new ArrayList<>(); // Lista de servidores
     private static final ConcurrentHashMap<Long, Server> servers = new ConcurrentHashMap<>(); //Gerenciar a concorrencia
-
-    // Método para adicionar um servidor à lista
-    public void addServer(Server server) {
-        localServersList.add(server);
-    }
-
-    public void removeServer(int index){
-        localServersList.remove(index);
-    }
-
-    // Método para obter o próximo servidor de forma cíclica
-    public Server getNextServer(int currentIndex) {
-
-        Server server = null;
-        // Ultimo da lista tem como proximo o primeiro da lista
-        if (currentIndex == getServerCount() - 1){
-            server = localServersList.get(0);
-        } else {
-            server = localServersList.get(currentIndex + 1);
-        }
-        return server;
-    }
-
-    // Método para obter o número de servidores registrados
-    public int getServerCount() {
-        return localServersList.size();
-    }
-
 
     // Método para obter o servidor com a menor contagem de clientes
     public static Server getServerWithLeastClients() {
+        var allServers = getAllServers();
 
-        return localServersList.stream()
+        return allServers.stream()
                 .min((server1, server2) -> Integer.compare(server1.getConnectedClients(), server2.getConnectedClients()))
                 .orElse(null);
     }
@@ -50,19 +23,37 @@ public class ServerManager {
         return serverList;
     }
 
-    public static void updateServers(List<Server> newServers) {
-        //Add new servers to the list
-        for (Server newServer : newServers) {
-            if (!localServersList.contains(newServer)) {
-                localServersList.add(newServer);
-            }
-        }
+    public static Server getServer(Long id){
+        return servers.get(id);
+    }
 
-        // If server is not on newList but is in oldList, remove
-        for (Server oldServer : localServersList){
-            if (!newServers.contains(oldServer)){
-                localServersList.remove(oldServer);
+    public static void addConnectedClients(Server server){
+        servers.put(server.getGroupMemberId(), server);
+    }
+
+    public static void updateServers(List<Server> newServers) {
+        try {
+            for (Server server : newServers) {
+                var oldServer = getServer(server.getGroupMemberId());
+                if (oldServer != null){
+                    server.setConnectedClients(oldServer.getConnectedClients());
+                }
+                servers.put(server.getGroupMemberId(), server);
             }
+
+            // If server is not on newList but is in oldList, remove
+            var oldServers = servers.values();
+            Iterator<Server> iterator = oldServers.iterator();
+
+            while (iterator.hasNext()){
+                var oldServer = iterator.next();
+                if (!newServers.contains(oldServer)){
+                    servers.remove(oldServer.getGroupMemberId());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("ServerManager. An unexpected error occur when updateServers");
+            e.printStackTrace();
         }
     }
 }

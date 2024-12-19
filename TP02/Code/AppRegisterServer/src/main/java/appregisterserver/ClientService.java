@@ -23,7 +23,7 @@ public class ClientService extends RegisterClientServiceGrpc.RegisterClientServi
                     .build();
 
             // Incrementa contagem de clientes
-            server.incrementClients();
+            ServerManager.addConnectedClients(server);
             responseObserver.onNext(svcServer);
             System.out.println("Sent SVC Server to Client!");
         } else {

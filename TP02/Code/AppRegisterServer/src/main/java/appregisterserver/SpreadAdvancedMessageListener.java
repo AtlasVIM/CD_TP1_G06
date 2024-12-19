@@ -16,10 +16,10 @@ public class SpreadAdvancedMessageListener implements AdvancedMessageListener {
 
             var message = AppRegisterServer.spreadManager.convertBytesToSpreadGroupMessage(spreadMessage.getData());
             if (message.getTypeServer() == SpreadTypeServer.LEADER) {
-                List<Server> servers = message.servers;
-                ServerManager.updateServers(servers);
-                System.out.println("Message Received!");
-                System.out.println("There are "+servers.size()+" servers in the system!");
+                //List<Server> servers = message.servers;
+                ServerManager.updateServers(message.servers);
+                System.out.println("Message Received from LEADER! "+message.servers.size());
+                System.out.println("There are "+ServerManager.getAllServers().size()+" servers in the system!");
             }
     }
 
