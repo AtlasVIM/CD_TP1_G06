@@ -177,7 +177,6 @@ public class ClientServer {
                             Gson gson = new Gson();
                             byte[] binData = downloadRequestObject.toByteArray();
                             String jsonString = new String(binData, StandardCharsets.UTF_8);
-                            System.out.println("Json "+jsonString);
                             ImageModel downloadedImageObj = gson.fromJson(jsonString, ImageModel.class);
                             if (debugMode) {
                                 System.out.println(
